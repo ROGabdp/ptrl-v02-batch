@@ -1,0 +1,15 @@
+﻿version: 1
+
+sweep:
+  name: label_grid_horizon_x_return
+  method: grid
+  max_runs: null
+  shuffle: false
+  fail_fast: false
+
+params:
+  label.horizon_days: [10, 20, 40]
+  label.threshold: [0.05, 0.10, 0.15]
+
+overrides:
+  train.finetune.tickers: [NVDA, GOOGL, TSM]

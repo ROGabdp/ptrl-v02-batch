@@ -1,0 +1,127 @@
+﻿version: 1
+
+run:
+  runs_root: runs
+  seed: 42
+
+universe:
+  benchmark: ^IXIC
+  tickers:
+    - NVDA
+    - MSFT
+    - AAPL
+    - AMZN
+    - META
+    - AVGO
+    - GOOGL
+    - TSLA
+    - NFLX
+    - PLTR
+    - TSM
+
+data:
+  provider: yfinance
+  auto_update: true
+  data_root: scripts/legacy/data/stocks
+  download_start: 2000-01-01
+
+splits:
+  warmup_days: 250
+  train_ranges:
+    - ["2000-01-01", "2017-10-15"]
+    - ["2023-10-16", "2025-12-31"]
+  val_range: ["2017-10-16", "2023-10-15"]
+
+label:
+  horizon_days: 20
+  threshold: 0.10
+  future_price_field: High
+  include_today: false
+
+features:
+  cache:
+    enabled: true
+    cache_root: scripts/legacy/data/processed
+  donchian:
+    upper_lower_window: 20
+    upper_window_fast: 10
+  atr:
+    windows: [5, 10, 20]
+  rsi:
+    window: 14
+  supertrend:
+    variants:
+      - period: 14
+        multiplier: 2.0
+      - period: 21
+        multiplier: 1.0
+  moving_average:
+    windows: [20, 60, 120, 240]
+  rs:
+    roc_windows: [5, 10, 20, 60, 120]
+    norm_window: 250
+  volatility_proxy:
+    hv_window: 20
+    atr_ratio_pair: [5, 20]
+    price_pos_window: 20
+  kd:
+    k_window: 9
+    d_window: 3
+  macd:
+    fast: 12
+    slow: 26
+    signal: 9
+  feature_cols:
+    - Norm_Close
+    - Norm_Open
+    - Norm_High
+    - Norm_Low
+    - Norm_DC_Lower
+    - Norm_HA_Open
+    - Norm_HA_High
+    - Norm_HA_Low
+    - Norm_HA_Close
+    - Norm_SuperTrend_1
+    - Norm_SuperTrend_2
+    - Norm_RSI
+    - Norm_ATR_Change
+    - Norm_RS_Ratio
+    - RS_ROC_5
+    - RS_ROC_10
+    - RS_ROC_20
+    - RS_ROC_60
+    - RS_ROC_120
+    - Feat_MA20_Slope
+    - Feat_Trend_Gap
+    - Feat_Bias_MA20
+    - Feat_Dist_MA60
+    - Feat_Dist_MA240
+    - Feat_ATR_Ratio
+    - Feat_HV20
+    - Feat_Price_Pos
+    - Norm_K
+    - Norm_D
+    - Norm_DIF
+    - Norm_MACD
+    - Norm_OSC
+
+train:
+  pretrain:
+    steps: 1000000
+    save_freq: 100000
+    eval_freq: 20000
+    n_eval_episodes: 100
+    n_envs_max: 8
+    learning_rate: 0.0001
+    batch_size: 512
+    ent_coef: 0.01
+    net_arch: [64, 64, 64]
+  finetune:
+    tickers: [NVDA, GOOGL, TSM]
+    steps: 750000
+    save_freq: 100000
+    eval_freq: 10000
+    n_eval_episodes: 100
+    n_envs_max: 4
+    learning_rate: 0.00001
+    ent_coef: 0.01
