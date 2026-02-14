@@ -99,6 +99,23 @@ python -m scripts.run_experiment --config configs/base.yaml --set train.finetune
 - 若 `runs/<run_id>/models/finetuned/<TICKER>/final.zip` 已存在且未加 `--force`，會跳過該 ticker 微調。
 - 若只有 `checkpoint_step_<N>.zip` / `best.zip` / `last.zip`，但沒有 `final.zip`，會嘗試從最近狀態續跑。
 
+## 重跑評估 (Re-run Metrics)
+
+若需對已存在的 run 重算評估指標（含 `buy_rate`, `positive_rate`, confusion matrix 等），可使用 `scripts.eval_metrics`：
+
+```powershell
+# 基本用法 (預設使用 finetuned 模型)
+python -m scripts.eval_metrics --run-dir runs/<run_id>
+
+# 指定使用 Base Model 評估所有 Tickers
+python -m scripts.eval_metrics --run-dir runs/<run_id> --mode base
+
+# 強制指定特定 Model 檔
+python -m scripts.eval_metrics --run-dir runs/<run_id> --model runs/<run_id>/models/base/best.zip
+```
+
+這將會更新 `runs/<run_id>/metrics.json`。
+
 ## 執行產出
 
 每次執行都會建立獨立目錄：

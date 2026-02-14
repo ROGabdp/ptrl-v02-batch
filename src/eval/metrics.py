@@ -17,12 +17,21 @@ def _classification_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str,
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
     accuracy = (tp + tn) / total
+    buy_rate = (tp + fp) / total
+    positive_rate = (tp + fn) / total
+
     return {
         "accuracy": float(accuracy),
         "precision": float(precision),
         "recall": float(recall),
         "f1": float(f1),
         "support": int(len(y_true)),
+        "buy_rate": float(buy_rate),
+        "positive_rate": float(positive_rate),
+        "tp": int(tp),
+        "fp": int(fp),
+        "tn": int(tn),
+        "fn": int(fn),
     }
 
 
