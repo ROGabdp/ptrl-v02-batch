@@ -175,6 +175,60 @@ python -m scripts.find_label_balance --ticker NVDA --out result.json
 - `--split val`：僅依 `|val_rate - target|` → `N_val` 排序
 - `--split train`：僅依 `|train_rate - target|` → `N_train` 排序
 
+## Model Registry
+
+當 `runs/` 裡的 run 越來越多，很難一眼看出每個 ticker 有哪些模型、各自的 label 目標和 metrics。`index_runs` 工具會掃描所有 run，建立兩份索引：
+
+- **`registry_models`**：所有 ticker-model 的完整列表（每個 ticker × 每個 run 為一列），含完整 metrics、模型路徑、label 目標。
+- **`registry_best_by_ticker`**：依選模邏輯，為每個 ticker 挑出最佳模型。
+
+### 基本用法
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m scripts.index_runs --runs-dir runs --out-dir reports/registry
+```
+
+每次執行都會**覆蓋更新** `reports/registry/` 下四個檔案：
+`registry_models.csv` / `.json`、`registry_best_by_ticker.csv` / `.json`
+
+### 選模流程（best_by_ticker）
+
+1. **確保比亂買好**：`lift >= 1.10`（precision / positive_rate；至少比隨機買入提升 10%，避免「事件太容易，亂買也準」的假象）
+2. **確保事件穩定**：`tp >= 30`（避免事件太稀有讓 lift/precision 虛高）
+3. **（可選）限制出手頻率**：若指定 `--buy-rate-max`，才過濾 `buy_rate <= 上限`
+4. **排序**（預設 `precision_first`）：precision ↓ → lift ↓ → buy_rate ↑ → support ↓
+
+> **為什麼 buy_rate 不做硬過濾？**
+> `buy_rate` 代表出手頻率，是交易偏好而非品質指標。一個 buy_rate=0.50 但 precision=0.70 的模型，仍然是好模型（只是比較積極）。
+> 真正判斷「是否亂買」應看 `lift` 和 `precision`。如果你想要更保守的策略（少出手），可以加 `--buy-rate-max 0.35`。
+
+### 若無模型通過
+
+若某 ticker 無任何模型通過過濾，工具會放寬門檻（`lift >= 1.0`、`tp >= 1`），挑出最接近的候選，並標記 `best_status="NO_PASS: <原因>"`。
+
+### 用法範例
+
+```powershell
+# 預設（buy_rate 不過濾，lift >= 1.10，tp >= 30）
+python -m scripts.index_runs --runs-dir runs --out-dir reports/registry
+
+# 放寬 lift 門檻（包含更接近亂買水準的模型）
+python -m scripts.index_runs --runs-dir runs --out-dir reports/registry --lift-min 1.05
+
+# 啟用少出手限制（更保守策略）
+python -m scripts.index_runs --runs-dir runs --out-dir reports/registry --buy-rate-max 0.35
+
+# 調整 min_tp（要求更多 TP 樣本）
+python -m scripts.index_runs --runs-dir runs --out-dir reports/registry --min-tp 50
+
+# 改用 lift 優先排序
+python -m scripts.index_runs --sort-preset lift_first
+
+# 只輸出 CSV / 包含缺檔 run
+python -m scripts.index_runs --format csv --include-incomplete
+```
+
 ## 常見問題
 
 - `ModuleNotFoundError: No module named 'yaml'`：
