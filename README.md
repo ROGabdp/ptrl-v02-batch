@@ -129,6 +129,52 @@ python -m scripts.eval_metrics --run-dir runs/<run_id> --model runs/<run_id>/mod
 - `runs/<run_id>/models/base/{checkpoint_step_<N>.zip,best.zip,last.zip,final.zip}`
 - `runs/<run_id>/models/finetuned/<TICKER>/{checkpoint_step_<N>.zip,best.zip,last.zip,final.zip}`
 
+## Label Balance Finder
+
+針對單一 ticker，搜尋 `(horizon_days, target_return)` 組合，使事件比例 `positive_rate` 接近指定目標（預設 50%），並同時輸出 train/val 的事件比例，幫助挑出 train/val 分佈更接近的 label 設定。
+
+### 基本用法
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m scripts.find_label_balance --ticker GOOGL --config configs/base.yaml --horizons 10,20,40 --returns 0.05,0.08,0.10,0.12,0.15 --target-rate 0.5 --top-k 10
+```
+
+### Dry Run（預覽模式）
+
+```powershell
+python -m scripts.find_label_balance --ticker NVDA --dry-run
+```
+
+### 輸出到檔案
+
+最簡方式：加上 `--save`，腳本會自動產生可讀檔名並寫入 `reports/label_balance/`：
+
+```powershell
+# 自動命名 CSV（預設格式）
+python -m scripts.find_label_balance --ticker TSM --config configs/base.yaml --horizons 10,20,60,120 --returns 0.1,0.15,0.2,0.25 --split both --target-rate 0.5 --top-k 10 --save
+
+# 自動命名 JSON
+python -m scripts.find_label_balance --ticker TSM --horizons 10,20,60,120 --returns 0.1,0.15,0.2,0.25 --save --format json
+```
+
+也可手動指定路徑（向後相容）：
+
+```powershell
+python -m scripts.find_label_balance --ticker NVDA --out label_balance__NVDA__both__20260215.csv
+python -m scripts.find_label_balance --ticker NVDA --out result.json
+```
+
+- 輸出檔預設位置為 `reports/label_balance/`，**不會**寫到 `runs/`。
+- 預設不寫檔，僅輸出到 stdout。
+- `--save` + `--out` 同時給時，以 `--out` 為準。
+
+### 排序規則
+
+- `--split both`（預設）：依 `|val_rate - target|` → `|train_rate - target|` → `|train - val|` → `N` 排序
+- `--split val`：僅依 `|val_rate - target|` → `N_val` 排序
+- `--split train`：僅依 `|train_rate - target|` → `N_train` 排序
+
 ## 常見問題
 
 - `ModuleNotFoundError: No module named 'yaml'`：
