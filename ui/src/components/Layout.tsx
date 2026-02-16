@@ -1,9 +1,9 @@
-
+import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, Database, Activity, GitBranch } from 'lucide-react'
 import clsx from 'clsx'
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: { children: ReactNode }) {
     const location = useLocation()
 
     const navItems = [
