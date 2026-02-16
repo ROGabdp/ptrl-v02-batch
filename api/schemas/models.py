@@ -37,7 +37,7 @@ class RunDetail(BaseModel):
     config: Dict[str, Any]
     metrics: Dict[str, Any]
     manifest: Dict[str, Any]
-    models: Dict[str, List[str]] # {"base": [...], "finetuned": {"NVDA": [...]}}
+    models: Dict[str, Any] # {"base": [...], "finetuned": {"NVDA": [...]}}
 
 class BacktestSummary(BaseModel):
     bt_run_id: str
