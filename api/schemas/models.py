@@ -1,17 +1,17 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class RegistryBestModel(BaseModel):
     ticker: str
     run_id: str
-    model_path: str
-    model_type: str  # "finetuned" or "base"
-    precision: float
-    lift: float
-    buy_rate: float
-    label_horizon_days: int
-    label_threshold: float
+    model_path: str = Field(validation_alias="model_final_path")
+    model_type: str = Field(validation_alias="mode")
+    precision: Optional[float] = None
+    lift: Optional[float] = None
+    buy_rate: Optional[float] = None
+    label_horizon_days: Optional[int] = None
+    label_threshold: Optional[float] = None
     
 class RegistryModelRow(BaseModel):
     ticker: str
