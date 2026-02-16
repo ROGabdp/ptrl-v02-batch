@@ -50,10 +50,10 @@ npm run dev
 
 - 瀏覽器開啟：http://localhost:5173
 - 功能：
-  - **Dashboard**: 查看最佳模型與最近執行紀錄
-  - **Registry**: 篩選與瀏覽所有已索引模型
-  - **Runs**: 查看訓練參數與產出模型
-  - **Backtests**: 查看回測績效、權益曲線 (Equity Curve) 與詳細交易摘要
+  - **Dashboard**: 查看最佳模型與最近執行紀錄。Phase 1.5 新增 Precision, Lift, Label, Pos Rate 等關鍵指標。
+  - **Registry**: 篩選與瀏覽所有已索引模型。Phase 1.5 新增 Lift/Precision 過濾器與詳細指標 (TP/FP, Pos Rate)。
+  - **Runs**: 查看訓練參數與產出模型。Phase 1.5 支援查看所有 Checkpoints 與複製模型路徑。
+  - **Backtests**: 查看回測績效、權益曲線 (Equity Curve)。Phase 1.5 新增策略參數摘要 (Strategy Summary)、最大回撤區間 (MDD Window) 與近期交易列表 (Recent Trades)。
 
 ## 訓練前檢查（建議先跑）
 

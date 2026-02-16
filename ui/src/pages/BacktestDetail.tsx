@@ -108,6 +108,80 @@ export default function BacktestDetail() {
                 </div>
             </section>
 
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Strategy Summary */}
+                {backtest.strategy_summary && (
+                    <section className="bg-white shadow rounded-lg p-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                            <Activity className="mr-2 h-5 w-5 text-gray-400" />
+                            Strategy
+                        </h2>
+                        <div className="space-y-2 text-sm">
+                            {Object.entries(backtest.strategy_summary).map(([k, v]) => (
+                                <div key={k} className="flex justify-between border-b border-gray-100 pb-1 last:border-0">
+                                    <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}</span>
+                                    <span className="text-gray-900 font-mono">{String(v)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* MDD Window */}
+                {backtest.mdd_window && (
+                    <section className="bg-white shadow rounded-lg p-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                            <Activity className="mr-2 h-5 w-5 text-gray-400" />
+                            Max Drawdown
+                        </h2>
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Peak</span>
+                                <span className="text-gray-900 font-mono">{backtest.mdd_window.mdd_peak_date}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Trough</span>
+                                <span className="text-gray-900 font-mono">{backtest.mdd_window.mdd_trough_date}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Recovery</span>
+                                <span className="text-gray-900 font-mono">{backtest.mdd_window.mdd_recovery_date || "Not Recovered"}</span>
+                            </div>
+                            <div className="flex justify-between pt-2 border-t border-gray-100">
+                                <span className="text-gray-500">Depth</span>
+                                <span className="text-red-600 font-bold">{(backtest.metrics.max_drawdown * 100).toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* Recent Trades */}
+                {backtest.recent_trades && (
+                    <section className="bg-white shadow rounded-lg p-6">
+                        <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                            <Activity className="mr-2 h-5 w-5 text-gray-400" />
+                            Recent Trades
+                        </h2>
+                        <div className="space-y-3">
+                            {backtest.recent_trades.map((t, i) => (
+                                <div key={i} className="text-sm border-b border-gray-100 pb-2 last:border-0">
+                                    <div className="flex justify-between mb-1">
+                                        <span className={t.pnl_pct >= 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+                                            {(t.pnl_pct * 100).toFixed(1)}%
+                                        </span>
+                                        <span className="text-gray-500 text-xs">{t.exit_reason}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>{t.entry_date} → {t.exit_date}</span>
+                                        <span>{t.holding_days}d</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* End Date Summary */}
                 <section className="bg-white shadow rounded-lg p-6">

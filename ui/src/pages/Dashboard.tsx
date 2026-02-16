@@ -17,10 +17,10 @@ export default function Dashboard() {
                     api.registry.getBest().catch(() => []),
                     api.runs.getRecent(5).catch(() => []),
                     api.backtests.getRecent(5).catch(() => [])
-                ])
-                setBestModels(best)
-                setRecentRuns(runs)
-                setRecentBacktests(bts)
+                ]);
+                setBestModels(best);
+                setRecentRuns(runs);
+                setRecentBacktests(bts);
             } catch (e) {
                 console.error('Failed to fetch dashboard data', e)
             } finally {
@@ -54,19 +54,55 @@ export default function Dashboard() {
                                         {model.run_id.substring(0, 8)}...
                                     </span>
                                 </div>
-                                <div className="space-y-1 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Precision</span>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-xs">Precision</span>
                                         <span className="font-medium text-green-600">{(model.precision * 100).toFixed(1)}%</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Lift</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-xs">Lift</span>
                                         <span className="font-medium text-blue-600">{model.lift.toFixed(2)}x</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Buy Rate</span>
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-xs">Label (H/TH)</span>
+                                        <span className="font-medium text-gray-900">{model.label_horizon_days}d / {(model.label_threshold * 100).toFixed(0)}%</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-xs">Pos Rate</span>
+                                        <span className="font-medium text-gray-900">{model.positive_rate ? (model.positive_rate * 100).toFixed(1) + "%" : "-"}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-xs">TP / FP</span>
+                                        <span className="font-medium text-gray-900">{model.tp ?? "-"} / {model.fp ?? "-"}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-gray-500 text-xs">Buy Rate</span>
                                         <span className="font-medium text-gray-700">{(model.buy_rate * 100).toFixed(1)}%</span>
                                     </div>
+                                </div>
+                                <div className="mt-4 flex space-x-2">
+                                    <Link
+                                        to={`/runs/${model.run_id}`}
+                                        className="flex-1 text-center px-2 py-1 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
+                                    >
+                                        Run
+                                    </Link>
+                                    {/* Find latest backtest for this ticker if available */}
+                                    {(() => {
+                                        const bt = recentBacktests.find(b => b.ticker === model.ticker);
+                                        return bt ? (
+                                            <Link
+                                                to={`/backtests/${bt.bt_run_id}`}
+                                                className="flex-1 text-center px-2 py-1 border border-transparent shadow-sm text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700"
+                                            >
+                                                Backtest
+                                            </Link>
+                                        ) : (
+                                            <button disabled className="flex-1 text-center px-2 py-1 border border-gray-200 text-xs font-medium rounded text-gray-300 bg-gray-50 cursor-not-allowed">
+                                                No BT
+                                            </button>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         ))}

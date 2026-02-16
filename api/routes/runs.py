@@ -96,21 +96,62 @@ def get_run_detail(run_id: str):
     
     # Models discovery
     models = {"base": [], "finetuned": {}}
+    checkpoints_count = 0
+    checkpoints_sample = []
     
     base_models_dir = run_path / "models" / "base"
     if base_models_dir.exists():
-        models["base"] = [f.name for f in base_models_dir.iterdir() if f.name.endswith(".zip")]
+        all_files = [f.name for f in base_models_dir.iterdir() if f.name.endswith(".zip")]
+        # Filter for key models
+        models["base"] = [f for f in all_files if f in ["final.zip", "best.zip", "last.zip"]]
+        
+        # Count checkpoints
+        checkpoints = [f for f in all_files if "checkpoint" in f]
+        checkpoints_count += len(checkpoints)
+        if not checkpoints_sample and checkpoints:
+            checkpoints_sample.extend(checkpoints[:3])
         
     finetuned_dir = run_path / "models" / "finetuned"
     if finetuned_dir.exists():
         for ticker_dir in finetuned_dir.iterdir():
             if ticker_dir.is_dir():
-                 models["finetuned"][ticker_dir.name] = [f.name for f in ticker_dir.iterdir() if f.name.endswith(".zip")]
+                all_files = [f.name for f in ticker_dir.iterdir() if f.name.endswith(".zip")]
+                models["finetuned"][ticker_dir.name] = [f for f in all_files if f in ["final.zip", "best.zip", "last.zip"]]
+                
+                checkpoints = [f for f in all_files if "checkpoint" in f]
+                checkpoints_count += len(checkpoints)
+                if len(checkpoints_sample) < 3 and checkpoints:
+                    checkpoints_sample.extend(checkpoints[:3 - len(checkpoints_sample)])
 
     return {
         "run_id": run_id,
         "config": config,
         "metrics": metrics,
         "manifest": manifest,
-        "models": models
+        "models": models,
+        "checkpoints_count": checkpoints_count,
+        "checkpoints_sample": checkpoints_sample
     }
+
+@router.get("/{run_id}/checkpoints")
+def get_run_checkpoints(run_id: str, mode: str = "base", ticker: Optional[str] = None):
+    run_path = safe_join(RUNS_DIR, run_id)
+    if not run_path.exists():
+        raise HTTPException(status_code=404, detail="Run not found")
+        
+    checkpoints = []
+    if mode == "base":
+        target_dir = run_path / "models" / "base"
+    elif mode == "finetuned":
+        if not ticker:
+             raise HTTPException(status_code=400, detail="Ticker required for finetuned mode")
+        target_dir = run_path / "models" / "finetuned" / ticker
+    else:
+        return []
+        
+    if target_dir.exists():
+        checkpoints = [f.name for f in target_dir.iterdir() if f.name.endswith(".zip") and "checkpoint" in f.name]
+        # Sort naturally if possible, or visually
+        checkpoints.sort()
+        
+    return checkpoints

@@ -2,13 +2,40 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '@/api/client'
 import { RunDetail as IRunDetail } from '@/types/api'
-import { FileText, Database, Layers } from 'lucide-react'
+import { FileText, Database, Layers, Copy, ChevronDown, ChevronUp } from 'lucide-react'
 
 export default function RunDetail() {
     const { runId } = useParams<{ runId: string }>()
     const [run, setRun] = useState<IRunDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [checkpoints, setCheckpoints] = useState<string[]>([])
+    const [loadingCheckpoints, setLoadingCheckpoints] = useState(false)
+    const [showCheckpoints, setShowCheckpoints] = useState({ base: false, finetuned: {} as Record<string, boolean> })
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        // Could add a toast here
+    }
+
+    const toggleCheckpoints = async (mode: 'base' | 'finetuned', _ticker?: string) => {
+        if (mode === 'base') {
+            if (!showCheckpoints.base) {
+                if (checkpoints.length === 0) {
+                    setLoadingCheckpoints(true)
+                    try {
+                        const data = await api.runs.getCheckpoints(runId!, 'base')
+                        setCheckpoints(data)
+                    } catch (e) {
+                        console.error("Failed to load checkpoints", e)
+                    } finally {
+                        setLoadingCheckpoints(false)
+                    }
+                }
+            }
+            setShowCheckpoints(prev => ({ ...prev, base: !prev.base }))
+        }
+    }
 
     useEffect(() => {
         if (!runId) return
@@ -100,12 +127,50 @@ export default function RunDetail() {
                     <div className="space-y-4">
                         <div>
                             <h3 className="text-sm font-semibold text-gray-700 mb-2">Base Models</h3>
-                            <div className="bg-gray-50 rounded p-2 text-xs font-mono">
+                            <div className="bg-gray-50 rounded p-2 text-xs font-mono space-y-2">
                                 {run.models.base.length > 0 ? (
                                     <ul className="list-disc pl-4 space-y-1">
-                                        {run.models.base.map(m => <li key={m}>{m}</li>)}
+                                        {run.models.base.map(m => (
+                                            <li key={m} className="flex items-center justify-between group">
+                                                <span>{m}</span>
+                                                <button onClick={() => copyToClipboard(m)} className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Copy className="h-3 w-3" />
+                                                </button>
+                                            </li>
+                                        ))}
                                     </ul>
-                                ) : <span className="text-gray-400">No base models</span>}
+                                ) : <span className="text-gray-400">No key models found</span>}
+
+                                {run.checkpoints_count > 0 && (
+                                    <div className="border-t border-gray-200 pt-2 mt-2">
+                                        <button
+                                            onClick={() => toggleCheckpoints('base')}
+                                            className="flex items-center text-indigo-600 hover:text-indigo-800 text-xs font-medium focus:outline-none"
+                                        >
+                                            {showCheckpoints.base ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
+                                            {showCheckpoints.base ? 'Hide' : `Show All ${run.checkpoints_count} Checkpoints`}
+                                        </button>
+
+                                        {showCheckpoints.base && (
+                                            <div className="mt-2 pl-4 max-h-48 overflow-y-auto">
+                                                {loadingCheckpoints ? (
+                                                    <div className="text-gray-400 italic">Loading...</div>
+                                                ) : (
+                                                    <ul className="list-disc space-y-1 text-gray-600">
+                                                        {checkpoints.map(cp => (
+                                                            <li key={cp} className="flex items-center justify-between group">
+                                                                <span>{cp}</span>
+                                                                <button onClick={() => copyToClipboard(cp)} className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <Copy className="h-3 w-3" />
+                                                                </button>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div>

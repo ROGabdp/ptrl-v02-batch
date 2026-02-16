@@ -12,16 +12,27 @@ class RegistryBestModel(BaseModel):
     buy_rate: Optional[float] = None
     label_horizon_days: Optional[int] = None
     label_threshold: Optional[float] = None
+    positive_rate: Optional[float] = None
+    tp: Optional[int] = None
+    fp: Optional[int] = None
+    tn: Optional[int] = None
+    fn: Optional[int] = None
+    support: Optional[int] = None
     
 class RegistryModelRow(BaseModel):
     ticker: str
     run_id: str
-    model_path: Optional[str] = None
+    model_path: Optional[str] = Field(None, validation_alias="model_final_path")
     precision: Optional[float] = None
     lift: Optional[float] = None
     buy_rate: Optional[float] = None
     tp: Optional[int] = None
     fp: Optional[int] = None
+    tn: Optional[int] = None
+    fn: Optional[int] = None
+    label_horizon_days: Optional[int] = None
+    label_threshold: Optional[float] = None
+    positive_rate: Optional[float] = None
     # Add other metrics as needed based on CSV columns
 
 class RunSummary(BaseModel):
@@ -38,6 +49,8 @@ class RunDetail(BaseModel):
     metrics: Dict[str, Any]
     manifest: Dict[str, Any]
     models: Dict[str, Any] # {"base": [...], "finetuned": {"NVDA": [...]}}
+    checkpoints_count: int = 0
+    checkpoints_sample: List[str] = []
 
 class BacktestSummary(BaseModel):
     bt_run_id: str

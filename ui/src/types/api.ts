@@ -8,6 +8,10 @@ export interface RegistryBestModel {
     buy_rate: number
     label_horizon_days: number
     label_threshold: number
+    positive_rate?: number
+    tp?: number
+    fp?: number
+    support?: number
 }
 
 export interface RegistryModelRow {
@@ -19,6 +23,11 @@ export interface RegistryModelRow {
     buy_rate: number
     tp: number
     fp: number
+    tn?: number
+    fn?: number
+    label_horizon_days?: number
+    label_threshold?: number
+    positive_rate?: number
 }
 
 export interface RunSummary {
@@ -61,6 +70,27 @@ export interface BacktestDetail {
     trades: any[]
     equity_curve: EquityPoint[]
     plot_path: string | null
+    strategy_summary?: {
+        stop_loss_pct?: number
+        take_profit_activation_pct?: number
+        trail_stop_low_pct?: number
+        trail_stop_high_pct?: number
+        min_days_between_entries?: number
+        use_market_filter?: boolean
+        conf_thresholds?: number[]
+    }
+    recent_trades?: {
+        entry_date: string
+        exit_date: string
+        pnl_pct: number
+        exit_reason: string
+        holding_days: number
+    }[]
+    mdd_window?: {
+        mdd_peak_date: string
+        mdd_trough_date: string
+        mdd_recovery_date: string | null
+    }
 }
 
 export interface RunDetail {
@@ -72,4 +102,6 @@ export interface RunDetail {
         base: string[]
         finetuned: Record<string, string[]>
     }
+    checkpoints_count: number
+    checkpoints_sample: string[]
 }
