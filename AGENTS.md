@@ -1,51 +1,61 @@
-﻿# Repository Guidelines
+# Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/` contains production code, split by responsibility: `data/`, `features/`, `splits/`, `train/`, `eval/`, `envs/`, and shared helpers in `config.py` and `utils/`.
-- `scripts/` contains entry points: `run_experiment.py` (single run) and `sweep.py` (grid runs). `scripts/legacy/` holds older training/data artifacts; avoid adding new logic there.
-- `configs/` stores YAML configs (`base.yaml`) and sweep definitions (`configs/sweeps/*.yaml`).
-- `runs/<run_id>/` is generated output (models, manifests, TensorBoard logs). Treat it as runtime artifact, not source.
+Core implementation lives in `src/` and is split by responsibility:
+- `src/data/` data loading
+- `src/features/` feature engineering
+- `src/splits/` train/validation split logic
+- `src/train/` model training stages
+- `src/eval/` evaluation metrics
+- `src/registry/` run indexing and model selection
+
+CLI entry points live in `scripts/` (for example `scripts/run_experiment.py`, `scripts/sweep.py`, `scripts/eval_metrics.py`).  
+Config files are in `configs/` (base config plus sweep configs).  
+Run artifacts are written to `runs/<run_id>/`; aggregated reports go to `reports/`.
 
 ## Build, Test, and Development Commands
-- Setup (PowerShell):
-  ```powershell
-  python -m venv .venv
-  .\.venv\Scripts\Activate.ps1
-  pip install -r requirements.txt
-  ```
-- Dry-run validation:
-  ```powershell
-  python -m scripts.run_experiment --config configs/base.yaml --dry-run
-  ```
-  Confirms config parsing and run directory creation without training.
-- Full run:
-  ```powershell
-  python -m scripts.run_experiment --config configs/base.yaml
-  ```
-- Sweep:
-  ```powershell
-  python -m scripts.sweep --config configs/base.yaml --sweep configs/sweeps/label_grid.yaml --dry-run
-  ```
+Use PowerShell from repo root:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+```powershell
+python -m scripts.run_experiment --config configs/base.yaml --dry-run
+```
+Validates config and run directory generation without training.
+
+```powershell
+python -m scripts.run_experiment --config configs/base.yaml
+python -m scripts.sweep --config configs/base.yaml --sweep configs/sweeps/label_grid.yaml
+python -m scripts.eval_metrics --run-dir runs/<run_id>
+python -m scripts.index_runs --runs-dir runs --out-dir reports/registry
+```
 
 ## Coding Style & Naming Conventions
-- Follow PEP 8 with 4-space indentation, type hints, and `snake_case` for functions/variables/modules.
-- Keep modules focused by stage (`train_*`, `split_*`, `build_*`) and prefer explicit dictionary keys for config-driven behavior.
-- Use UTF-8 text files; keep YAML keys stable and readable (no unnecessary reordering).
+- Python 3.10+ with 4-space indentation and type hints (`dict[str, Any]`, etc.).
+- Favor small, single-purpose functions and explicit argument names.
+- Use `snake_case` for functions/variables/files, `UPPER_SNAKE_CASE` for constants.
+- Keep modules domain-focused (data/features/train/eval) and avoid cross-layer shortcuts.
+- YAML keys use dotted override paths (for example `--set label.threshold=0.15`).
 
 ## Testing Guidelines
-- No dedicated `tests/` suite is currently present. Use repeatable smoke checks:
-  - `run_experiment --dry-run`
-  - `sweep --dry-run`
-- When adding logic, include small deterministic checks close to the changed module and verify `runs/<run_id>/manifest.json` and `metrics.json` are generated.
+There is no dedicated `tests/` suite yet. Minimum validation before PR:
+- Run `--dry-run` for config/path integrity.
+- Run one real experiment on `configs/base.yaml`.
+- If you change metrics or registry logic, re-run `scripts.eval_metrics` and `scripts.index_runs` on a recent run and verify output files in `runs/` and `reports/registry/`.
 
 ## Commit & Pull Request Guidelines
-- Git history is not available in this workspace snapshot (`.git` missing), so use clear imperative commit subjects, e.g., `Add cache key validation in feature builder`.
+- Prefer Conventional Commit style seen in history: `feat: ...`, `fix: ...`, `chore: ...`.
+- Keep commits focused and scoped to one change.
 - PRs should include:
-  - Purpose and scope
-  - Configs used to validate (`configs/base.yaml`, sweep file, overrides)
-  - Before/after behavior (logs or key metric/manifests paths)
-  - Any runtime or reproducibility impact
+  - what changed and why
+  - config or CLI examples to reproduce
+  - impacted paths (for example `src/eval/metrics.py`, `configs/base.yaml`)
+  - before/after notes for metrics or registry outputs when behavior changes
 
 ## Security & Configuration Tips
-- Do not commit secrets or API keys in YAML/config overrides.
-- Keep large artifacts (`runs/`, model `.zip` files, TensorBoard logs) out of commits unless explicitly required.
+- Do not commit secrets or API keys.
+- Keep raw datasets and large model artifacts out of git; `.gitignore` should cover generated outputs under `runs/`.

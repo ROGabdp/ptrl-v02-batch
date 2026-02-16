@@ -1,4 +1,4 @@
-﻿# Python bytecode and caches
+# Python bytecode and caches
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,6 +6,8 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
+.coverage
+coverage.xml
 
 # Virtual environments
 .venv/
@@ -19,7 +21,21 @@ dist/
 
 # Experiment outputs and artifacts
 runs/
+reports/label_balance/
+reports/registry/
 scripts/legacy/data/processed/
+
+# Model and training byproducts
+**/checkpoint_step_*.zip
+**/best.zip
+**/last.zip
+**/final.zip
+events.out.tfevents*
+
+# Local environment and secrets
+.env
+.env.*
+*.local
 
 # Logs
 *.log
