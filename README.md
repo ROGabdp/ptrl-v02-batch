@@ -229,6 +229,74 @@ python -m scripts.index_runs --sort-preset lift_first
 python -m scripts.index_runs --format csv --include-incomplete
 ```
 
+## Backtesting（回測）
+
+使用訓練出的模型進行 config-driven 回測，支援 per-ticker 策略覆寫與視覺化輸出。
+
+### 輸出位置
+
+- 回測產物寫入 `backtests/<bt_run_id>/`（**不進 git**，已加入 `.gitignore`）
+- 每個 ticker 會產生獨立的 `bt_run_id` 目錄
+- 每次回測輸出：`config.yaml`、`selection.json`、`trades.csv`、`equity.csv`、`metrics.json`、`summary.txt`、`plots/equity_curve.png`
+- **跟單摘要**：另外產出 `end_date_summary_<TICKER>_<START>_<END>.txt`，包含市場數據、AI 信號、帳戶狀態、持倉停損/停利價位、明日交易建議
+
+### 預設日期區間
+
+CLI 未指定 `--start` / `--end` 時，使用 `configs/backtest/base.yaml` 中的預設值：
+
+| 欄位 | 預設值 |
+|------|--------|
+| start | 2017-10-16 |
+| end | 2023-10-15 |
+
+若只指定 `--start`（未給 `--end`），`end` **自動使用今天日期**，並自動更新本地 CSV 快取。
+
+### 模型來源
+
+預設從 `reports/registry/registry_best_by_ticker.csv` 選模。也可透過 `--model-path` 強制指定。
+
+回測會自動從 registry 對應的 `config_path` 讀取訓練 config，確保特徵（feature_cols、feature params）與訓練時一致。
+
+### per_ticker 策略覆寫
+
+`configs/backtest/base.yaml` 中的 `strategy` 為全域預設，`per_ticker` 區塊可為個別 ticker 覆寫差異值（深層 merge）。
+
+例如 TSM 使用更寬的停損：
+
+```yaml
+per_ticker:
+  TSM:
+    exit:
+      stop_loss_pct: 0.10   # 全域預設 0.08，TSM 改為 0.10
+```
+
+### 基本用法
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+
+# 1) 用預設區間（2017-10-16 ~ 2023-10-15）
+python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker NVDA
+
+# 2) 只指定 start，end 自動 today（自動更新資料）
+python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker NVDA --start 2025-12-09
+
+# 3) 指定完整區間
+python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker NVDA --start 2025-12-09 --end 2026-02-14
+
+# 4) 多檔
+python -m scripts.run_backtest --config configs/backtest/base.yaml --tickers NVDA,GOOGL,TSM
+
+# 5) 覆寫策略參數
+python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker TSM --set strategy.exit.stop_loss_pct=0.10
+
+# 6) dry-run（只印摘要，不回測）
+python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker GOOGL --dry-run
+
+# 7) 關閉畫圖
+python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker GOOGL --no-plot
+```
+
 ## 常見問題
 
 - `ModuleNotFoundError: No module named 'yaml'`：

@@ -126,6 +126,7 @@ def build_features_for_ticker(
     df_in: pd.DataFrame,
     benchmark_df: pd.DataFrame | None,
     use_cache: bool = True,
+    include_labels: bool = True,
 ) -> tuple[pd.DataFrame, str]:
     data_start = df_in.index.min().strftime("%Y-%m-%d") if len(df_in) else None
     data_end = df_in.index.max().strftime("%Y-%m-%d") if len(df_in) else None
@@ -236,19 +237,23 @@ def build_features_for_ticker(
         for period in [int(p) for p in fcfg["rs"]["roc_windows"]]:
             df[f"RS_ROC_{period}"] = 0.0
 
-    df = add_buy_targets(
-        df=df,
-        horizon_days=int(lcfg["horizon_days"]),
-        threshold=float(lcfg["threshold"]),
-        future_price_field=str(lcfg.get("future_price_field", "High")),
-        include_today=bool(lcfg.get("include_today", False)),
-    )
+    if include_labels:
+        df = add_buy_targets(
+            df=df,
+            horizon_days=int(lcfg["horizon_days"]),
+            threshold=float(lcfg["threshold"]),
+            future_price_field=str(lcfg.get("future_price_field", "High")),
+            include_today=bool(lcfg.get("include_today", False)),
+        )
 
     feature_cols = cfg["features"].get("feature_cols") or DEFAULT_FEATURE_COLS
     df = df.dropna(subset=["MA240"])
-    df = df.dropna(subset=[c for c in feature_cols if c in df.columns] + ["Next_Max_Return"])
+    dropna_cols = [c for c in feature_cols if c in df.columns]
+    if include_labels:
+        dropna_cols += ["Next_Max_Return"]
+    df = df.dropna(subset=dropna_cols)
 
-    if use_cache:
+    if use_cache and include_labels:
         with cache_path.open("wb") as f:
             pickle.dump(df, f)
     return df, cache_key

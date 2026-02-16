@@ -21,9 +21,10 @@ dist/
 
 # Experiment outputs and artifacts
 runs/
-reports/label_balance/
-reports/registry/
 scripts/legacy/data/processed/
+
+# Backtest outputs (large, not versioned)
+/backtests/
 
 # Model and training byproducts
 **/checkpoint_step_*.zip
