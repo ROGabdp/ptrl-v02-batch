@@ -46,3 +46,8 @@ events.out.tfevents*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Node.js dependencies
+node_modules/
+ui/dist/
+.env.local

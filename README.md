@@ -22,6 +22,39 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+## GUI Dashboard (Phase 1)
+
+本專案提供一個本地 Web UI，用於瀏覽 Registry、Training Runs 與 Backtests 結果。
+
+### 1. 啟動後端 API (Port 8000)
+
+使用 FastAPI 提供唯讀資料介面：
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+uvicorn api.app:app --reload --port 8000
+```
+
+- API 文件：http://localhost:8000/docs
+- 測試：http://localhost:8000/api/registry/best
+
+### 2. 啟動前端 UI (Port 5173)
+
+使用 React + Vite (已設定 Proxy 轉發 API 請求)：
+
+```powershell
+cd ui
+npm install  # 首次執行
+npm run dev
+```
+
+- 瀏覽器開啟：http://localhost:5173
+- 功能：
+  - **Dashboard**: 查看最佳模型與最近執行紀錄
+  - **Registry**: 篩選與瀏覽所有已索引模型
+  - **Runs**: 查看訓練參數與產出模型
+  - **Backtests**: 查看回測績效、權益曲線 (Equity Curve) 與詳細交易摘要
+
 ## 訓練前檢查（建議先跑）
 
 先做乾跑，確認 config 與流程可正常建立 run：
