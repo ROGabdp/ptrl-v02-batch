@@ -9,32 +9,12 @@ export default function RunDetail() {
     const [run, setRun] = useState<IRunDetail | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [notice, setNotice] = useState<string | null>(null)
     const [checkpoints, setCheckpoints] = useState<string[]>([])
     const [loadingCheckpoints, setLoadingCheckpoints] = useState(false)
-    const [submitting, setSubmitting] = useState(false)
     const [showCheckpoints, setShowCheckpoints] = useState({ base: false, finetuned: {} as Record<string, boolean> })
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text)
-    }
-
-    const recomputeMetrics = async () => {
-        if (!runId) return
-        setSubmitting(true)
-        setNotice(null)
-        try {
-            const job = await api.jobs.createEvalMetrics({
-                run_id: runId,
-                mode: 'finetune',
-                dry_run: true,
-            })
-            setNotice(`Job created: ${job.job_id}`)
-        } catch (e: any) {
-            setNotice(`Create job failed: ${e.message}`)
-        } finally {
-            setSubmitting(false)
-        }
     }
 
     const toggleCheckpoints = async (mode: 'base' | 'finetuned', _ticker?: string) => {
@@ -73,36 +53,24 @@ export default function RunDetail() {
 
     if (loading) return <div className="p-8 text-center">Loading run details...</div>
     if (error) return <div className="p-8 text-center text-red-600">Error: {error}</div>
-    if (!run) return <div className="p-8 text-center text-gray-500">Run not found</div>
+    if (!run || !runId) return <div className="p-8 text-center text-gray-500">Run not found</div>
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900 font-mono">Run: {run.run_id}</h1>
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={recomputeMetrics}
-                        disabled={submitting}
-                        className="px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-60"
+                    <Link
+                        to={`/actions?type=eval&run_id=${encodeURIComponent(runId)}`}
+                        className="px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
                     >
-                        Recompute Metrics
-                    </button>
+                        Open Eval in Actions
+                    </Link>
                     <span className="text-sm text-gray-500">
                         {run.manifest.start_time ? new Date(run.manifest.start_time).toLocaleString() : ''}
                     </span>
                 </div>
             </div>
-
-            {notice && (
-                <div className="rounded-md bg-indigo-50 text-indigo-800 px-3 py-2 text-sm">
-                    {notice}{' '}
-                    {notice.includes('Job created:') && (
-                        <Link className="underline" to={`/jobs/${notice.split(': ')[1]}`}>
-                            Open detail
-                        </Link>
-                    )}
-                </div>
-            )}
 
             {run.metrics && Object.keys(run.metrics).length > 0 && (
                 <section className="bg-white shadow rounded-lg p-6">

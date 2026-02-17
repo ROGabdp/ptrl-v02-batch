@@ -4,9 +4,10 @@ import {
     BacktestSummary,
     EquityPoint,
     EvalMetricsJobRequest,
-    JobRecord,
+    JobDetail,
+    JobLogResponse,
     RegistryBestModel,
-    RegistryModelRow,
+    RegistryModelsResponse,
     RunDetail,
     RunSummary,
     TrainJobRequest,
@@ -36,24 +37,29 @@ async function postJson<T>(url: string, payload: unknown): Promise<T> {
     return response.json()
 }
 
-async function fetchText(url: string): Promise<string> {
-    const response = await fetch(url)
-    if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`API Error ${response.status}: ${errorText}`)
-    }
-    return response.text()
-}
-
 export const api = {
     registry: {
         getBest: () => fetchJson<RegistryBestModel[]>(`${API_BASE}/registry/best`),
-        getModels: (params?: { ticker?: string; limit?: number; offset?: number }) => {
+        getModels: (params?: {
+            ticker?: string
+            min_lift?: number
+            min_precision?: number
+            min_support?: number
+            max_buy_rate?: number
+            sort?: string
+            limit?: number
+            offset?: number
+        }) => {
             const qs = new URLSearchParams()
             if (params?.ticker) qs.append('ticker', params.ticker)
+            if (params?.min_lift !== undefined) qs.append('min_lift', params.min_lift.toString())
+            if (params?.min_precision !== undefined) qs.append('min_precision', params.min_precision.toString())
+            if (params?.min_support !== undefined) qs.append('min_support', params.min_support.toString())
+            if (params?.max_buy_rate !== undefined) qs.append('max_buy_rate', params.max_buy_rate.toString())
+            if (params?.sort) qs.append('sort', params.sort)
             if (params?.limit) qs.append('limit', params.limit.toString())
-            if (params?.offset) qs.append('offset', params.offset.toString())
-            return fetchJson<RegistryModelRow[]>(`${API_BASE}/registry/models?${qs.toString()}`)
+            if (params?.offset !== undefined) qs.append('offset', params.offset.toString())
+            return fetchJson<RegistryModelsResponse>(`${API_BASE}/registry/models?${qs.toString()}`)
         },
     },
     runs: {
@@ -71,12 +77,23 @@ export const api = {
         getEquity: (btId: string) => fetchJson<EquityPoint[]>(`${API_BASE}/backtests/${btId}/equity`),
     },
     jobs: {
-        createTrain: (payload: TrainJobRequest) => postJson<JobRecord>(`${API_BASE}/jobs/train`, payload),
-        createBacktest: (payload: BacktestJobRequest) => postJson<JobRecord>(`${API_BASE}/jobs/backtest`, payload),
+        createTrain: (payload: TrainJobRequest) => postJson<JobDetail>(`${API_BASE}/jobs/train`, payload),
+        createBacktest: (payload: BacktestJobRequest) => postJson<JobDetail>(`${API_BASE}/jobs/backtest`, payload),
         createEvalMetrics: (payload: EvalMetricsJobRequest) =>
-            postJson<JobRecord>(`${API_BASE}/jobs/eval-metrics`, payload),
-        getRecent: (limit = 50) => fetchJson<JobRecord[]>(`${API_BASE}/jobs/recent?limit=${limit}`),
-        getOne: (jobId: string) => fetchJson<JobRecord>(`${API_BASE}/jobs/${jobId}`),
-        getLog: (jobId: string) => fetchText(`${API_BASE}/jobs/${jobId}/log`),
+            postJson<JobDetail>(`${API_BASE}/jobs/eval-metrics`, payload),
+        getRecent: (params?: { limit?: number; status?: string; job_type?: string }) => {
+            const qs = new URLSearchParams()
+            qs.append('limit', String(params?.limit ?? 100))
+            if (params?.status) qs.append('status', params.status)
+            if (params?.job_type) qs.append('job_type', params.job_type)
+            return fetchJson<JobDetail[]>(`${API_BASE}/jobs/recent?${qs.toString()}`)
+        },
+        getOne: (jobId: string) => fetchJson<JobDetail>(`${API_BASE}/jobs/${jobId}`),
+        getLog: (jobId: string, params?: { offset?: number; tail?: number }) => {
+            const qs = new URLSearchParams()
+            if (params?.offset !== undefined) qs.append('offset', String(params.offset))
+            if (params?.tail !== undefined) qs.append('tail', String(params.tail))
+            return fetchJson<JobLogResponse>(`${API_BASE}/jobs/${jobId}/log?${qs.toString()}`)
+        },
     },
 }

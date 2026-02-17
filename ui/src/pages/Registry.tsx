@@ -1,116 +1,137 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { api } from '@/api/client'
 import { RegistryModelRow } from '@/types/api'
+import CompareDrawer from '@/components/CompareDrawer'
+
+const SORT_OPTIONS = [
+    {
+        label: 'Precision > Lift > BuyRate > Support',
+        value: 'precision_desc,lift_desc,buy_rate_asc,support_desc',
+    },
+    {
+        label: 'Lift > Precision > BuyRate > Support',
+        value: 'lift_desc,precision_desc,buy_rate_asc,support_desc',
+    },
+    {
+        label: 'Precision > Support > Lift > BuyRate',
+        value: 'precision_desc,support_desc,lift_desc,buy_rate_asc',
+    },
+]
+
+function pct(v?: number): string {
+    if (v === undefined || v === null) return '-'
+    return `${(v * 100).toFixed(1)}%`
+}
 
 export default function Registry() {
     const [tickerFilter, setTickerFilter] = useState('')
     const [liftMin, setLiftMin] = useState('')
     const [precisionMin, setPrecisionMin] = useState('')
+    const [supportMin, setSupportMin] = useState('30')
+    const [maxBuyRate, setMaxBuyRate] = useState('')
+    const [sort, setSort] = useState(SORT_OPTIONS[0].value)
     const [models, setModels] = useState<RegistryModelRow[]>([])
-    const [filteredModels, setFilteredModels] = useState<RegistryModelRow[]>([])
     const [loading, setLoading] = useState(false)
     const [offset, setOffset] = useState(0)
-    const [notice, setNotice] = useState<string | null>(null)
+    const [total, setTotal] = useState(0)
+    const [error, setError] = useState<string | null>(null)
+    const [selected, setSelected] = useState<Record<string, RegistryModelRow>>({})
+    const [compareOpen, setCompareOpen] = useState(false)
+    const [compareNotice, setCompareNotice] = useState<string | null>(null)
     const LIMIT = 50
 
-    async function fetchModels(reset = false) {
+    const compareItems = useMemo(() => Object.values(selected), [selected])
+
+    const getCompareKey = (row: RegistryModelRow) => {
+        const horizon = row.label_horizon_days ?? 'na'
+        const threshold = row.label_threshold ?? 'na'
+        const mode = row.mode ?? 'na'
+        return `${row.ticker}::${row.run_id}::${mode}::${horizon}::${threshold}`
+    }
+
+    async function fetchModels(nextOffset = 0) {
         setLoading(true)
+        setError(null)
         try {
-            const currentOffset = reset ? 0 : offset
-            const data = await api.registry.getModels({
+            const res = await api.registry.getModels({
                 ticker: tickerFilter || undefined,
+                min_lift: liftMin ? parseFloat(liftMin) : undefined,
+                min_precision: precisionMin ? parseFloat(precisionMin) : undefined,
+                min_support: supportMin ? parseInt(supportMin, 10) : undefined,
+                max_buy_rate: maxBuyRate ? parseFloat(maxBuyRate) : undefined,
+                sort,
                 limit: LIMIT,
-                offset: currentOffset,
+                offset: nextOffset,
             })
-            setModels(data)
-            setFilteredModels(data)
-            if (reset) setOffset(0)
-        } catch (e) {
-            console.error('Failed to fetch registry models', e)
+            setModels(res.items)
+            setTotal(res.total)
+            setOffset(res.offset)
+        } catch (e: any) {
+            setError(e.message || 'Failed to fetch registry models')
         } finally {
             setLoading(false)
         }
     }
 
-    const runBacktest = async (ticker: string, modelPath: string) => {
-        try {
-            const job = await api.jobs.createBacktest({
-                config_path: 'configs/backtest/base.yaml',
-                tickers: [ticker],
-                model_path: modelPath,
-                dry_run: false,
-            })
-            setNotice(`Backtest job created: ${job.job_id}`)
-        } catch (e: any) {
-            setNotice(`Create job failed: ${e.message}`)
-        }
-    }
-
     useEffect(() => {
-        fetchModels(true)
+        fetchModels(0)
     }, [])
 
-    useEffect(() => {
-        const filtered = models.filter((model) => {
-            if (tickerFilter && !model.ticker.includes(tickerFilter.toUpperCase())) return false
-            if (liftMin && model.lift < parseFloat(liftMin)) return false
-            if (precisionMin && model.precision < parseFloat(precisionMin)) return false
-            return true
-        })
-        setFilteredModels(filtered)
-    }, [tickerFilter, liftMin, precisionMin, models])
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            fetchModels(true)
-        }
-    }
+    const onRefetch = () => fetchModels(0)
 
     const handleNext = () => {
-        setOffset((prev) => prev + LIMIT)
-        setTimeout(() => {
-            api.registry
-                .getModels({ ticker: tickerFilter || undefined, limit: LIMIT, offset: offset + LIMIT })
-                .then(setModels)
-        }, 0)
+        const next = offset + LIMIT
+        if (next >= total) return
+        fetchModels(next)
     }
 
     const handlePrev = () => {
-        if (offset < LIMIT) return
-        setOffset((prev) => prev - LIMIT)
-        setTimeout(() => {
-            api.registry
-                .getModels({ ticker: tickerFilter || undefined, limit: LIMIT, offset: offset - LIMIT })
-                .then(setModels)
-        }, 0)
+        const prev = Math.max(0, offset - LIMIT)
+        fetchModels(prev)
+    }
+
+    const toggleSelect = (row: RegistryModelRow) => {
+        const key = getCompareKey(row)
+        setSelected((prev) => {
+            const next = { ...prev }
+            if (next[key]) {
+                delete next[key]
+                setCompareNotice(null)
+                return next
+            }
+            if (Object.keys(next).length >= 4) {
+                setCompareNotice('Compare \u6700\u591a\u53ef\u540c\u6642\u9078\u53d6 4 \u7b46')
+                return next
+            }
+            next[key] = row
+            setCompareNotice(null)
+            return next
+        })
     }
 
     return (
         <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Model Registry</h1>
 
-            {notice && <div className="mb-4 rounded-md bg-indigo-50 text-indigo-800 px-3 py-2 text-sm">{notice}</div>}
-
-            <div className="mb-6 flex gap-4">
-                <div className="relative flex-1 max-w-sm">
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-6 gap-3">
+                <div className="relative md:col-span-2">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <Search className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                         type="text"
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        placeholder="Filter by Ticker"
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        placeholder="Ticker"
                         value={tickerFilter}
                         onChange={(e) => setTickerFilter(e.target.value)}
-                        onKeyDown={handleKeyDown}
                     />
                 </div>
                 <input
                     type="number"
-                    placeholder="Min Lift (e.g. 1.1)"
-                    className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 w-40"
+                    placeholder="Min Lift"
+                    className="px-3 py-2 border border-gray-300 rounded-md"
                     value={liftMin}
                     onChange={(e) => setLiftMin(e.target.value)}
                     step="0.1"
@@ -118,18 +139,56 @@ export default function Registry() {
                 <input
                     type="number"
                     placeholder="Min Precision"
-                    className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 w-40"
+                    className="px-3 py-2 border border-gray-300 rounded-md"
                     value={precisionMin}
                     onChange={(e) => setPrecisionMin(e.target.value)}
                     step="0.05"
                 />
+                <input
+                    type="number"
+                    placeholder="Min Support"
+                    className="px-3 py-2 border border-gray-300 rounded-md"
+                    value={supportMin}
+                    onChange={(e) => setSupportMin(e.target.value)}
+                />
+                <input
+                    type="number"
+                    placeholder="Max Buy Rate"
+                    className="px-3 py-2 border border-gray-300 rounded-md"
+                    value={maxBuyRate}
+                    onChange={(e) => setMaxBuyRate(e.target.value)}
+                    step="0.01"
+                />
+                <select
+                    className="px-3 py-2 border border-gray-300 rounded-md md:col-span-2"
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value)}
+                >
+                    {SORT_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                </select>
                 <button
-                    onClick={() => fetchModels(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+                    onClick={onRefetch}
+                    className="px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                 >
                     Refetch
                 </button>
+                <button
+                    disabled={compareItems.length < 2}
+                    onClick={() => setCompareOpen(true)}
+                    className="px-4 py-2 text-sm font-medium rounded-md border border-indigo-300 text-indigo-700 bg-indigo-50 disabled:opacity-50"
+                >
+                    Compare ({compareItems.length})
+                </button>
             </div>
+
+            {compareNotice && (
+                <div className="mb-4 rounded-md bg-amber-50 text-amber-800 px-3 py-2 text-sm border border-amber-200">
+                    {compareNotice}
+                </div>
+            )}
+            {error && <div className="mb-4 rounded-md bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</div>}
 
             <div className="bg-white shadow overflow-hidden rounded-lg">
                 {loading ? (
@@ -141,87 +200,95 @@ export default function Registry() {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Run ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label (H/TH)</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precision</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lift</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Rate</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos Rate</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TP / FP</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-4 py-3"></th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Run ID</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label (H/TH)</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precision</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lift</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Rate</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos Rate</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Support</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TP / FP</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredModels.map((row, idx) => (
-                                    <tr key={`${row.run_id}-${row.ticker}-${idx}`} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.ticker}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                                            <Link to={`/runs/${row.run_id}`} className="text-indigo-600 hover:text-indigo-900">
-                                                {row.run_id.substring(0, 8)}...
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {row.label_horizon_days}d / {row.label_threshold ? (row.label_threshold * 100).toFixed(0) + '%' : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(row.precision * 100).toFixed(1)}%</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.lift.toFixed(2)}x</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(row.buy_rate * 100).toFixed(1)}%</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {row.positive_rate ? (row.positive_rate * 100).toFixed(1) + '%' : '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {row.tp ?? '-'} / {row.fp ?? '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 hover:text-indigo-900">
-                                            <div className="flex space-x-3">
-                                                <Link to={`/runs/${row.run_id}`} className="hover:underline">
-                                                    Details
+                                {models.map((row, idx) => {
+                                    const key = getCompareKey(row)
+                                    const selectedRow = !!selected[key]
+                                    const modelPath = row.model_final_path || ''
+                                    const actionsHref = `/actions?type=backtest&ticker=${encodeURIComponent(row.ticker)}&model_path=${encodeURIComponent(modelPath)}`
+                                    return (
+                                        <tr key={`${row.run_id}-${row.ticker}-${idx}`} className="hover:bg-gray-50">
+                                            <td className="px-4 py-4">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedRow}
+                                                    onChange={() => toggleSelect(row)}
+                                                />
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.ticker}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                                                <Link to={`/runs/${row.run_id}`} className="text-indigo-600 hover:text-indigo-900">
+                                                    {row.run_id.substring(0, 12)}...
                                                 </Link>
-                                                <button className="hover:underline" onClick={() => runBacktest(row.ticker, row.model_path)}>
-                                                    Run Backtest
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {row.label_horizon_days ?? '-'}d / {pct(row.label_threshold)}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{pct(row.precision)}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{row.lift?.toFixed(2) ?? '-'}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{pct(row.buy_rate)}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{pct(row.positive_rate)}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{row.support ?? '-'}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500" title={`TN=${row.tn ?? '-'} FN=${row.fn ?? '-'}`}>
+                                                {row.tp ?? '-'} / {row.fp ?? '-'}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-indigo-600 hover:text-indigo-900">
+                                                <div className="flex space-x-3">
+                                                    <Link to={`/runs/${row.run_id}`} className="hover:underline">
+                                                        Details
+                                                    </Link>
+                                                    <Link to={actionsHref} className="hover:underline">
+                                                        Run Backtest
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
                 )}
 
                 <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p className="text-sm text-gray-700">
-                                Showing <span className="font-medium">{offset + 1}</span> to{' '}
-                                <span className="font-medium">{offset + models.length}</span> results
-                            </p>
-                        </div>
-                        <div>
-                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                <button
-                                    onClick={handlePrev}
-                                    disabled={offset === 0}
-                                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                >
-                                    <span className="sr-only">Previous</span>
-                                    <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                                </button>
-                                <button
-                                    onClick={handleNext}
-                                    disabled={models.length < LIMIT}
-                                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                >
-                                    <span className="sr-only">Next</span>
-                                    <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
+                    <p className="text-sm text-gray-700">
+                        Showing <span className="font-medium">{Math.min(offset + 1, total || 0)}</span> to{' '}
+                        <span className="font-medium">{Math.min(offset + models.length, total)}</span> of{' '}
+                        <span className="font-medium">{total}</span>
+                    </p>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button
+                            onClick={handlePrev}
+                            disabled={offset === 0}
+                            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                            <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                        <button
+                            onClick={handleNext}
+                            disabled={offset + LIMIT >= total}
+                            className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                            <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                    </nav>
                 </div>
             </div>
+
+            <CompareDrawer open={compareOpen} items={compareItems} onClose={() => setCompareOpen(false)} />
         </div>
     )
 }
-

@@ -1,22 +1,47 @@
-from typing import Dict, List, Literal, Optional
+from typing import List, Literal, Optional
+
 from pydantic import BaseModel, Field
 
-JobType = Literal["train", "backtest", "eval_metrics"]
+JobType = Literal["train", "backtest", "eval-metrics", "eval_metrics"]
 JobStatus = Literal["QUEUED", "RUNNING", "SUCCESS", "FAILED"]
 
 
-class Job(BaseModel):
+class JobArtifacts(BaseModel):
+    run_id: Optional[str] = None
+    run_dir: Optional[str] = None
+    bt_run_id: Optional[str] = None
+    bt_dir: Optional[str] = None
+    artifacts_parse_error: Optional[str] = None
+
+
+class JobRuntime(BaseModel):
+    meta_path: str
+    log_path: str
+
+
+class JobDetailResponse(BaseModel):
     job_id: str
     job_type: JobType
     status: JobStatus
     created_at: str
     started_at: Optional[str] = None
     ended_at: Optional[str] = None
+    duration_sec: Optional[float] = None
+    exit_code: Optional[int] = None
+    error_message: Optional[str] = None
     command: List[str]
+    args_preview: str
     cwd: str
-    artifacts_hint: Optional[Dict[str, str]] = None
+    artifacts: JobArtifacts = Field(default_factory=JobArtifacts)
+    runtime: JobRuntime
+
+
+class JobLogResponse(BaseModel):
+    job_id: str
+    content: str
+    next_offset: int
+    is_truncated: bool
     log_path: str
-    meta_path: str
 
 
 class TrainJobRequest(BaseModel):
@@ -39,4 +64,3 @@ class EvalMetricsJobRequest(BaseModel):
     run_id: str
     mode: Literal["base", "finetune"] = "finetune"
     dry_run: bool = False
-

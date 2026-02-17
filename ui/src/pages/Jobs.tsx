@@ -1,14 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/api/client'
-import { JobRecord, JobStatus } from '@/types/api'
-
-const STATUS_STYLES: Record<JobStatus, string> = {
-    QUEUED: 'bg-gray-100 text-gray-700',
-    RUNNING: 'bg-blue-100 text-blue-700',
-    SUCCESS: 'bg-green-100 text-green-700',
-    FAILED: 'bg-red-100 text-red-700',
-}
+import { JobDetail } from '@/types/api'
+import StatusBadge from '@/components/StatusBadge'
 
 function fmt(ts: string | null | undefined): string {
     if (!ts) return '-'
@@ -17,9 +11,11 @@ function fmt(ts: string | null | undefined): string {
 }
 
 export default function Jobs() {
-    const [jobs, setJobs] = useState<JobRecord[]>([])
+    const [jobs, setJobs] = useState<JobDetail[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [statusFilter, setStatusFilter] = useState<string>('')
+    const [typeFilter, setTypeFilter] = useState<string>('')
 
     const hasRunning = useMemo(
         () => jobs.some((j) => j.status === 'QUEUED' || j.status === 'RUNNING'),
@@ -31,7 +27,11 @@ export default function Jobs() {
 
         const load = async () => {
             try {
-                const data = await api.jobs.getRecent(100)
+                const data = await api.jobs.getRecent({
+                    limit: 100,
+                    status: statusFilter || undefined,
+                    job_type: typeFilter || undefined,
+                })
                 setJobs(data)
                 setError(null)
             } catch (e: any) {
@@ -47,7 +47,7 @@ export default function Jobs() {
         return () => {
             if (timer) window.clearInterval(timer)
         }
-    }, [hasRunning])
+    }, [hasRunning, statusFilter, typeFilter])
 
     return (
         <div className="space-y-6">
@@ -59,6 +59,36 @@ export default function Jobs() {
                 >
                     New Action
                 </Link>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-lg p-4 flex flex-wrap gap-3 items-end">
+                <label className="text-sm text-gray-700">
+                    Status
+                    <select
+                        className="ml-2 border border-gray-300 rounded px-2 py-1"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="">All</option>
+                        <option value="QUEUED">QUEUED</option>
+                        <option value="RUNNING">RUNNING</option>
+                        <option value="SUCCESS">SUCCESS</option>
+                        <option value="FAILED">FAILED</option>
+                    </select>
+                </label>
+                <label className="text-sm text-gray-700">
+                    Type
+                    <select
+                        className="ml-2 border border-gray-300 rounded px-2 py-1"
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value)}
+                    >
+                        <option value="">All</option>
+                        <option value="train">train</option>
+                        <option value="backtest">backtest</option>
+                        <option value="eval-metrics">eval-metrics</option>
+                    </select>
+                </label>
             </div>
 
             {error && <div className="rounded-md bg-red-50 text-red-700 px-3 py-2 text-sm">{error}</div>}
@@ -77,6 +107,7 @@ export default function Jobs() {
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Status</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Started</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Ended</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Duration(s)</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Args</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Jump</th>
                             </tr>
@@ -91,23 +122,24 @@ export default function Jobs() {
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-700">{job.job_type}</td>
                                     <td className="px-4 py-3 text-sm">
-                                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[job.status]}`}>
-                                            {job.status}
-                                        </span>
+                                        <StatusBadge status={job.status} />
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-600">{fmt(job.started_at)}</td>
                                     <td className="px-4 py-3 text-sm text-gray-600">{fmt(job.ended_at)}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600">
+                                        {job.duration_sec !== undefined && job.duration_sec !== null ? job.duration_sec.toFixed(1) : '-'}
+                                    </td>
                                     <td className="px-4 py-3 text-xs font-mono text-gray-600 max-w-xl truncate">
-                                        {job.command.join(' ')}
+                                        {job.args_preview}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-indigo-700 space-x-2">
-                                        {job.artifacts_hint?.run_id && (
-                                            <Link to={`/runs/${job.artifacts_hint.run_id}`} className="hover:underline">
+                                        {job.artifacts?.run_id && (
+                                            <Link to={`/runs/${job.artifacts.run_id}`} className="hover:underline">
                                                 Run
                                             </Link>
                                         )}
-                                        {job.artifacts_hint?.bt_run_id && (
-                                            <Link to={`/backtests/${job.artifacts_hint.bt_run_id}`} className="hover:underline">
+                                        {job.artifacts?.bt_run_id && (
+                                            <Link to={`/backtests/${job.artifacts.bt_run_id}`} className="hover:underline">
                                                 Backtest
                                             </Link>
                                         )}
