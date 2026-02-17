@@ -1,8 +1,14 @@
-from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import PlainTextResponse
-from typing import List
+from typing import List, Optional
 
-from api.schemas.jobs import BacktestJobRequest, EvalMetricsJobRequest, Job, TrainJobRequest
+from fastapi import APIRouter, HTTPException, Query
+
+from api.schemas.jobs import (
+    BacktestJobRequest,
+    EvalMetricsJobRequest,
+    JobDetailResponse,
+    JobLogResponse,
+    TrainJobRequest,
+)
 from api.services.jobs import (
     create_backtest_job,
     create_eval_metrics_job,
@@ -15,7 +21,7 @@ from api.services.jobs import (
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
-@router.post("/train", response_model=Job)
+@router.post("/train", response_model=JobDetailResponse)
 def create_train(request: TrainJobRequest):
     try:
         return create_train_job(
@@ -27,7 +33,7 @@ def create_train(request: TrainJobRequest):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-@router.post("/backtest", response_model=Job)
+@router.post("/backtest", response_model=JobDetailResponse)
 def create_backtest(request: BacktestJobRequest):
     try:
         return create_backtest_job(
@@ -43,7 +49,7 @@ def create_backtest(request: BacktestJobRequest):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-@router.post("/eval-metrics", response_model=Job)
+@router.post("/eval-metrics", response_model=JobDetailResponse)
 def create_eval_metrics(request: EvalMetricsJobRequest):
     try:
         return create_eval_metrics_job(
@@ -55,12 +61,16 @@ def create_eval_metrics(request: EvalMetricsJobRequest):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
-@router.get("/recent", response_model=List[Job])
-def recent_jobs(limit: int = Query(50, ge=1, le=200)):
-    return get_recent_jobs(limit=limit)
+@router.get("/recent", response_model=List[JobDetailResponse])
+def recent_jobs(
+    limit: int = Query(100, ge=1, le=500),
+    status: Optional[str] = Query(None),
+    job_type: Optional[str] = Query(None),
+):
+    return get_recent_jobs(limit=limit, status=status, job_type=job_type)
 
 
-@router.get("/{job_id}", response_model=Job)
+@router.get("/{job_id}", response_model=JobDetailResponse)
 def get_job_detail(job_id: str):
     try:
         return get_job(job_id)
@@ -68,10 +78,15 @@ def get_job_detail(job_id: str):
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found") from exc
 
 
-@router.get("/{job_id}/log", response_class=PlainTextResponse)
-def get_log(job_id: str):
+@router.get("/{job_id}/log", response_model=JobLogResponse)
+def get_log(
+    job_id: str,
+    offset: int = Query(0, ge=0),
+    tail: int = Query(20000, ge=1, le=2_000_000),
+):
     try:
-        return get_job_log(job_id)
+        return get_job_log(job_id, offset=offset, tail=tail)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"Log for job {job_id} not found") from exc
-
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

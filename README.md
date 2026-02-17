@@ -398,3 +398,47 @@ npm run dev
 - 本專案所有文字檔統一使用 **UTF-8（無 BOM）**。
 - 請勿使用 Big5、CP950、UTF-16 或系統預設 ANSI 編碼寫入專案檔案。
 - 若以腳本寫檔，請明確指定 `encoding="utf-8"`。
+
+## GUI Phase 2 - Milestone 2
+
+本里程碑重點如下：
+
+- Jobs API 與 UI 升級：
+  - `GET /api/jobs/{job_id}/log?offset=0&tail=20000` 支援 bytes offset 增量讀取。
+  - `GET /api/jobs/{job_id}` 回傳 `duration_sec`、`exit_code`、`error_message`、`artifacts`、`runtime`。
+  - `GET /api/jobs/recent` 支援 `status` 與 `job_type` 篩選。
+  - UI `JobDetail` 提供 Auto-follow log viewer、Copy、Error Summary。
+
+- Registry 升級為伺服器端篩選、排序與分頁：
+  - `GET /api/registry/models` 支援 `ticker`、`min_lift`、`min_precision`、`min_support`、`max_buy_rate`、`sort`、`limit`、`offset`。
+  - 回傳格式：`{ items, total, limit, offset }`。
+  - UI 新增 compare drawer（最多 4 檔，且不可重複 ticker）。
+
+- Actions 升級：
+  - 支援 querystring 預填：
+    - `/actions?type=backtest&ticker=TSM&model_path=...&start=YYYY-MM-DD&end=YYYY-MM-DD`
+    - `/actions?type=train&config_path=configs/base.yaml`
+    - `/actions?type=eval&run_id=<run_id>`
+  - 支援 overrides preview（`key=value` 解析 JSON + Copy）。
+
+- 流程調整：
+  - Dashboard / Registry / RunDetail 操作按鈕改為導向預填的 `Actions` 頁面，而非在當頁直接觸發任務。
+
+## 防亂碼寫檔流程（必須遵守）
+
+为避免出現 連續問號字元（例如四個問號） 或文字損壞，任何 agent 或腳本在寫入中文內容時，必須依下列流程執行：
+
+1. 統一使用 UTF-8（無 BOM）寫檔。
+2. 不可使用 shell 直接內嵌中文多行字串寫檔（容易受終端碼頁影響而變成 `?`）。
+3. 若需以腳本寫入中文，請使用下列安全方式之一：
+   - Python `Path.write_text(..., encoding="utf-8")`；
+   - 內文字串使用 Unicode escape（`\uXXXX`）；
+   - 或從已為 UTF-8 的範本檔載入後再寫回。
+4. 寫檔後必做驗證：
+   - 掃描是否出現 連續問號字元（例如四個問號）、`U+FFFD`（replacement char）。
+   - 重讀並確認關鍵段落的正體中文顯示正常。
+5. 若驗證失敗，不得提交或結束任務，必須先修正至通過驗證。
+
+### 禁止事項
+- 禁止使用 Big5、CP950、UTF-16、ANSI 寫入專案文字檔。
+- 禁止在未驗證的情況下宣稱「編碼正常」。

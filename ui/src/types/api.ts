@@ -17,17 +17,35 @@ export interface RegistryBestModel {
 export interface RegistryModelRow {
     ticker: string
     run_id: string
-    model_path: string
-    precision: number
-    lift: number
-    buy_rate: number
-    tp: number
-    fp: number
-    tn?: number
-    fn?: number
+    mode?: string
     label_horizon_days?: number
     label_threshold?: number
+    precision?: number
+    recall?: number
+    f1?: number
+    accuracy?: number
+    buy_rate?: number
     positive_rate?: number
+    lift?: number
+    tp?: number
+    fp?: number
+    tn?: number
+    fn?: number
+    support?: number
+    model_final_path?: string
+    config_path?: string
+    metrics_path?: string
+    manifest_path?: string
+    start_time?: string
+    end_time?: string
+    status?: string
+}
+
+export interface RegistryModelsResponse {
+    items: RegistryModelRow[]
+    total: number
+    limit: number
+    offset: number
 }
 
 export interface RunSummary {
@@ -106,25 +124,48 @@ export interface RunDetail {
     checkpoints_sample: string[]
 }
 
-export type JobType = 'train' | 'backtest' | 'eval_metrics'
+export type JobType = 'train' | 'backtest' | 'eval-metrics' | 'eval_metrics'
 export type JobStatus = 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED'
 
-export interface JobRecord {
+export interface JobArtifacts {
+    run_id?: string
+    run_dir?: string
+    bt_run_id?: string
+    bt_dir?: string
+    artifacts_parse_error?: string
+}
+
+export interface JobRuntimePaths {
+    meta_path: string
+    log_path: string
+}
+
+export interface JobDetail {
     job_id: string
     job_type: JobType
     status: JobStatus
     created_at: string
     started_at: string | null
     ended_at: string | null
+    duration_sec?: number | null
+    exit_code?: number | null
+    error_message?: string | null
     command: string[]
+    args_preview: string
     cwd: string
-    artifacts_hint?: {
-        run_id?: string
-        bt_run_id?: string
-    } | null
-    log_path: string
-    meta_path: string
+    artifacts: JobArtifacts
+    runtime: JobRuntimePaths
 }
+
+export interface JobLogResponse {
+    job_id: string
+    content: string
+    next_offset: number
+    is_truncated: boolean
+    log_path: string
+}
+
+export type JobRecord = JobDetail
 
 export interface TrainJobRequest {
     config_path: string
@@ -147,4 +188,3 @@ export interface EvalMetricsJobRequest {
     mode?: 'base' | 'finetune'
     dry_run?: boolean
 }
-
