@@ -28,6 +28,7 @@ class TrainJobRequest(BaseModel):
 class BacktestJobRequest(BaseModel):
     config_path: str
     tickers: Optional[List[str]] = None
+    model_path: Optional[str] = None
     start: Optional[str] = None
     end: Optional[str] = None
     overrides: List[str] = Field(default_factory=list)
@@ -38,3 +39,4 @@ class EvalMetricsJobRequest(BaseModel):
     run_id: str
     mode: Literal["base", "finetune"] = "finetune"
     dry_run: bool = False
+

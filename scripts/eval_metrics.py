@@ -20,6 +20,7 @@ def evaluate_run(
     config_path: Path | None = None,
     model_path: Path | None = None,
     mode: str = "finetune",
+    dry_run: bool = False,
 ) -> None:
     if not run_dir.exists():
         raise FileNotFoundError(f"Run directory not found: {run_dir}")
@@ -39,6 +40,16 @@ def evaluate_run(
                  raise FileNotFoundError(f"Config not found in {run_dir} and no override provided")
         else:
             cfg = load_yaml(cfg_path)
+
+    if dry_run:
+        logger.info("[DRY-RUN] Validation passed.")
+        logger.info(f"[DRY-RUN] run_dir={run_dir}")
+        logger.info(f"[DRY-RUN] mode={mode}")
+        if config_path:
+            logger.info(f"[DRY-RUN] config_override={config_path}")
+        if model_path:
+            logger.info(f"[DRY-RUN] model_override={model_path}")
+        return
 
     # 2. Load Data & Features
     logger.info("Loading data...")
@@ -163,6 +174,13 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, help="Path to config override")
     parser.add_argument("--model", type=str, help="Path to specific model zip")
     parser.add_argument("--mode", type=str, default="finetune", choices=["finetune", "base"], help="Evaluation mode")
-    
+    parser.add_argument("--dry-run", action="store_true", help="Validate arguments and paths without recomputing metrics")
+
     args = parser.parse_args()
-    evaluate_run(Path(args.run_dir), args.config, args.model and Path(args.model), args.mode)
+    evaluate_run(
+        Path(args.run_dir),
+        args.config and Path(args.config),
+        args.model and Path(args.model),
+        args.mode,
+        args.dry_run,
+    )

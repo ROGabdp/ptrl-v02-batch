@@ -117,7 +117,7 @@ train:
     ent_coef: 0.01
     net_arch: [64, 64, 64]
   finetune:
-    tickers: [GOOGL]
+    tickers: [MSFT]
     steps: 750000
     save_freq: 100000
     eval_freq: 10000

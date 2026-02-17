@@ -210,6 +210,17 @@ python -m scripts.find_label_balance --ticker NVDA --out result.json
 
 ## Model Registry
 
+### 訓練完成後請先重建 Registry（重要）
+
+每次模型訓練完成（新增 run 或新增 ticker 模型）後，請先重建 registry 檔案，Dashboard 與 Registry 頁面才會讀到最新結果。
+
+```powershell
+python -m scripts.index_runs --runs-dir runs --out-dir reports/registry
+```
+
+若未重建，UI 會持續顯示舊的 registry 內容。
+
+
 當 `runs/` 裡的 run 越來越多，很難一眼看出每個 ticker 有哪些模型、各自的 label 目標和 metrics。`index_runs` 工具會掃描所有 run，建立兩份索引：
 
 - **`registry_models`**：所有 ticker-model 的完整列表（每個 ticker × 每個 run 為一列），含完整 metrics、模型路徑、label 目標。
@@ -382,3 +393,8 @@ npm run dev
 - `/jobs`: monitor recent jobs (status polling every few seconds).
 - `/jobs/:jobId`: inspect command metadata and live log output.
 
+## 檔案編碼規範（避免亂碼）
+
+- 本專案所有文字檔統一使用 **UTF-8（無 BOM）**。
+- 請勿使用 Big5、CP950、UTF-16 或系統預設 ANSI 編碼寫入專案檔案。
+- 若以腳本寫檔，請明確指定 `encoding="utf-8"`。

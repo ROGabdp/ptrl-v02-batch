@@ -33,6 +33,7 @@ def create_backtest(request: BacktestJobRequest):
         return create_backtest_job(
             config_path=request.config_path,
             tickers=request.tickers,
+            model_path=request.model_path,
             start=request.start,
             end=request.end,
             overrides=request.overrides,
@@ -73,3 +74,4 @@ def get_log(job_id: str):
         return get_job_log(job_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=f"Log for job {job_id} not found") from exc
+

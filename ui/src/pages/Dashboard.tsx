@@ -35,12 +35,13 @@ export default function Dashboard() {
         fetchData()
     }, [])
 
-    const onRunBacktest = async (ticker: string) => {
+    const onRunBacktest = async (ticker: string, modelPath: string) => {
         try {
             const job = await api.jobs.createBacktest({
                 config_path: 'configs/backtest/base.yaml',
                 tickers: [ticker],
-                dry_run: true,
+                model_path: modelPath,
+                dry_run: false,
             })
             setNotice(`Backtest job created: ${job.job_id}`)
             setRecentJobs((prev) => [job, ...prev].slice(0, 5))
@@ -136,7 +137,7 @@ export default function Dashboard() {
                                     })()}
                                 </div>
                                 <button
-                                    onClick={() => onRunBacktest(model.ticker)}
+                                    onClick={() => onRunBacktest(model.ticker, model.model_path)}
                                     className="mt-2 w-full text-center px-2 py-1 border border-indigo-200 text-xs font-medium rounded text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
                                 >
                                     Run Backtest with this model
@@ -249,3 +250,4 @@ export default function Dashboard() {
         </div>
     )
 }
+

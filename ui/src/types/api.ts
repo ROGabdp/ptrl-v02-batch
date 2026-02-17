@@ -135,6 +135,7 @@ export interface TrainJobRequest {
 export interface BacktestJobRequest {
     config_path: string
     tickers?: string[]
+    model_path?: string
     start?: string
     end?: string
     overrides?: string[]
@@ -146,3 +147,4 @@ export interface EvalMetricsJobRequest {
     mode?: 'base' | 'finetune'
     dry_run?: boolean
 }
+

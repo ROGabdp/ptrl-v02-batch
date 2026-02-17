@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import re
 import sys
@@ -137,7 +137,7 @@ def _run_job(job_id: str) -> None:
                 job_id,
                 status=status,
                 ended_at=_now_iso(),
-                artifacts_hint=artifacts_hint or None,
+                artifacts_hint=(artifacts_hint or None) if status == "SUCCESS" else None,
             )
     except Exception as exc:
         with log_file.open("a", encoding="utf-8") as out:
@@ -194,6 +194,7 @@ def build_train_command(config_path: str, overrides: List[str], dry_run: bool) -
 def build_backtest_command(
     config_path: str,
     tickers: Optional[List[str]],
+    model_path: Optional[str],
     start: Optional[str],
     end: Optional[str],
     overrides: List[str],
@@ -226,6 +227,12 @@ def build_backtest_command(
         command.extend(["--start", start])
     if end:
         command.extend(["--end", end])
+
+    if model_path:
+        if not tickers or len([t for t in tickers if t.strip()]) != 1:
+            raise ValueError("model_path requires exactly one ticker")
+        model = _resolve_repo_path(model_path, must_exist=True)
+        command.extend(["--model-path", _to_relative(model)])
 
     for item in overrides:
         command.extend(["--set", item])
@@ -264,12 +271,13 @@ def create_train_job(config_path: str, overrides: List[str], dry_run: bool) -> J
 def create_backtest_job(
     config_path: str,
     tickers: Optional[List[str]],
+    model_path: Optional[str],
     start: Optional[str],
     end: Optional[str],
     overrides: List[str],
     dry_run: bool,
 ) -> Job:
-    command = build_backtest_command(config_path, tickers, start, end, overrides, dry_run)
+    command = build_backtest_command(config_path, tickers, model_path, start, end, overrides, dry_run)
     return _create_job("backtest", command)
 
 
@@ -301,3 +309,6 @@ def get_job_log(job_id: str) -> str:
     if not path.exists():
         raise FileNotFoundError(job_id)
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+

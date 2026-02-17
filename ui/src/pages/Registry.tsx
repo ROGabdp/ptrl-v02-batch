@@ -34,12 +34,13 @@ export default function Registry() {
         }
     }
 
-    const runBacktest = async (ticker: string) => {
+    const runBacktest = async (ticker: string, modelPath: string) => {
         try {
             const job = await api.jobs.createBacktest({
                 config_path: 'configs/backtest/base.yaml',
                 tickers: [ticker],
-                dry_run: true,
+                model_path: modelPath,
+                dry_run: false,
             })
             setNotice(`Backtest job created: ${job.job_id}`)
         } catch (e: any) {
@@ -177,7 +178,7 @@ export default function Registry() {
                                                 <Link to={`/runs/${row.run_id}`} className="hover:underline">
                                                     Details
                                                 </Link>
-                                                <button className="hover:underline" onClick={() => runBacktest(row.ticker)}>
+                                                <button className="hover:underline" onClick={() => runBacktest(row.ticker, row.model_path)}>
                                                     Run Backtest
                                                 </button>
                                             </div>
@@ -223,3 +224,4 @@ export default function Registry() {
         </div>
     )
 }
+

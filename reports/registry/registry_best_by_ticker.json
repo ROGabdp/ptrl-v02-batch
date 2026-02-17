@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-02-15T20:16:11.972000",
+    "generated_at": "2026-02-17T17:29:49.782239",
     "runs_dir": "D:\\000-github-repositories\\ptrl-v02-batch\\runs",
     "buy_rate_max": null,
     "lift_min": 1.1,
@@ -8,8 +8,8 @@
     "min_tp": 30,
     "min_positive_rate": null,
     "include_incomplete": false,
-    "total_rows": 46,
-    "total_best": 3
+    "total_rows": 48,
+    "total_best": 4
   },
   "data": [
     {
@@ -40,6 +40,36 @@
       "status": "READY",
       "best_status": "PASS",
       "selection_sort_key": "precision=0.551|lift=1.259|buy_rate=0.485|support=1509|tp=403",
+      "selection_filters": "lift_min=1.1; min_tp=30; buy_rate_max=None"
+    },
+    {
+      "run_id": "20260217_171416__0e304dfc",
+      "mode": "finetune",
+      "ticker": "MSFT",
+      "label_horizon_days": 120,
+      "label_threshold": 0.2,
+      "precision": 0.788546255506608,
+      "recall": 0.22236024844720498,
+      "f1": 0.3468992248062015,
+      "accuracy": 0.5533465871438038,
+      "buy_rate": 0.1504307488402916,
+      "positive_rate": 0.5334658714380385,
+      "tp": 179,
+      "fp": 48,
+      "tn": 656,
+      "fn": 626,
+      "support": 1509,
+      "lift": 1.478157,
+      "model_final_path": "runs\\20260217_171416__0e304dfc\\models\\finetuned\\MSFT\\final.zip",
+      "config_path": "runs\\20260217_171416__0e304dfc\\config.yaml",
+      "metrics_path": "runs\\20260217_171416__0e304dfc\\metrics.json",
+      "manifest_path": "runs\\20260217_171416__0e304dfc\\manifest.json",
+      "git_commit": "a5d8aee40d8f61f5fead569de1edae78ce95dda1",
+      "start_time": "2026-02-17T17:14:16.604679",
+      "end_time": "2026-02-17T17:25:30.160761",
+      "status": "READY",
+      "best_status": "PASS",
+      "selection_sort_key": "precision=0.789|lift=1.478|buy_rate=0.150|support=1509|tp=179",
       "selection_filters": "lift_min=1.1; min_tp=30; buy_rate_max=None"
     },
     {
