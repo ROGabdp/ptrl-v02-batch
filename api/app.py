@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import backtests, jobs, registry, runs
+from api.routes import backtests, daily, jobs, registry, runs
 
 app = FastAPI(
     title="ptrl-v02-batch Dashboard API",
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(registry.router, prefix="/api")
 app.include_router(runs.router, prefix="/api")
 app.include_router(backtests.router, prefix="/api")
+app.include_router(daily.router, prefix="/api")
 app.include_router(jobs.router, prefix="/api")
 
 

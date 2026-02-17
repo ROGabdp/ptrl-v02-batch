@@ -3,27 +3,43 @@
 ## Project Structure & Module Organization
 - `src/`: core Python pipeline code (data loading, features, labels, training, evaluation, backtesting helpers).
 - `scripts/`: CLI entrypoints for workflows such as `run_experiment`, `sweep`, `run_backtest`, `index_runs`, and metrics utilities.
-- `api/`: FastAPI backend (`api.app`) with read-only routes and service-layer readers for runs, registry, and backtests.
+- `api/`: FastAPI backend (`api.app`) with routes for data retrieval, job execution (train/backtest), and configuration management.
 - `ui/src/`: React + TypeScript frontend (pages, components, API client).
-- `configs/`: YAML configs (`base.yaml`, sweep grids, backtest config).
+- `configs/`: YAML configs (`base.yaml`, `daily_watchlist.yaml`, sweep grids, backtest config).
 - Generated outputs: `runs/`, `reports/`, `backtests/` (treat as artifacts, not source).
 
 ## Build, Test, and Development Commands
-- Install Python deps:
-  - `python -m venv .venv && .\.venv\Scripts\Activate.ps1 && pip install -r requirements.txt`
-- Validate training config without full run:
-  - `python -m scripts.run_experiment --config configs/base.yaml --dry-run`
-- Run sweep preview:
-  - `python -m scripts.sweep --config configs/base.yaml --sweep configs/sweeps/label_grid.yaml --dry-run`
-- Run a backtest:
-  - `python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker NVDA`
-- Start API:
-  - `uvicorn api.app:app --reload --port 8000`
-- Start UI:
-  - `cd ui; npm install; npm run dev`
-- UI quality gates:
-  - `cd ui; npm run build`
-  - `cd ui; npm run lint`
+- **Recommended (Windows)**:
+  - Start: `scripts\dev_start.bat` (Starts Backend + Frontend + Browser)
+  - Stop: `scripts\dev_stop.bat`
+
+
+
+## Daily Decision Center (Phase 2 Milestone 3)
+
+新增每日決策流程，用於產生次日交易訊號。
+
+### 架構設計
+
+1.  **Configuration**:
+    -   `configs/daily_watchlist.yaml`: 獨立管理監控清單 (Tickers) 與策略參數 (Strategies)。
+    -   支援 `per_ticker` 覆寫策略，確保不同標的可使用不同停損/停利設定。
+
+2.  **Date Resolution (Auto-Date)**:
+    -   API 接收 `date_override` 參數。
+    -   若 User 未指定 End Date，系統自動預設為 **Today** (Local Time)。
+    -   流程：`Override` > `Config` > `Today`.
+
+3.  **Runtime Config Generation**:
+    -   為確保 Backtest Job 執行參數的一致性與可追溯性，每次執行 Batch 時：
+        1.  讀取 `daily_watchlist.yaml`。
+        2.  為每個 Ticker 生成獨立的完整 YAML Config。
+        3.  寫入 `reports/daily/runtime/<batch_id>/<ticker>.yaml` (Git Ignored)。
+    -   Job 直接引用生成的 Runtime Config，避免 `conf_thresholds` 等複雜結構在 CLI 傳遞時發生解析錯誤。
+
+4.  **UI Workflows**:
+    -   **Run All**: 透過 `POST /api/daily/run-backtests` 觸發批次作業。
+    -   **Results**: 前端輪詢 Job Status，完成後從 Job Artifacts 讀取 `bt_run_id`，並顯示 `end_date_summary`。
 
 ## Coding Style & Naming Conventions
 - Python: follow PEP 8, 4-space indentation, `snake_case` for modules/functions, `PascalCase` for classes.

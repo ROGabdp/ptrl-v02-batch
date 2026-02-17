@@ -427,3 +427,17 @@ npm run dev
 
 - 本流程完整版本請以 `AGENTS.md` 為準。
 - README 僅保留入口，不重複維護完整條文。
+
+## Daily Decision Center (Phase 2 Milestone 3)
+
+本里程碑新增每日決策中心，用於產生次日交易訊號。
+
+### 功能特色
+- **獨立 Config**：使用 `configs/daily_watchlist.yaml` 管理每日監控清單與策略參數。
+- **Auto Date**：End Date 預設為 Today，自動抓取最新數據。
+- **Runtime Config**：每次執行自動生成 `reports/daily/runtime/<batch_id>/<ticker>.yaml`，確保策略參數一致性。
+- **UI 整合**：提供專屬 `/daily` 頁面，支援參數調整、Dry Run 與結果預覽。
+
+### 快速指令
+- 啟動開發環境：`scripts\dev_start.bat`
+- 停止開發環境：`scripts\dev_stop.bat`

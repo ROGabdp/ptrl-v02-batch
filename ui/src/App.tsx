@@ -3,6 +3,7 @@ import { Layout } from '@/components/Layout'
 import Actions from '@/pages/Actions'
 import BacktestDetail from '@/pages/BacktestDetail'
 import Backtests from '@/pages/Backtests'
+import Daily from '@/pages/Daily'
 import Dashboard from '@/pages/Dashboard'
 import JobDetail from '@/pages/JobDetail'
 import Jobs from '@/pages/Jobs'
@@ -16,6 +17,7 @@ function App() {
             <Layout>
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
+                    <Route path="/daily" element={<Daily />} />
                     <Route path="/registry" element={<Registry />} />
                     <Route path="/runs" element={<Runs />} />
                     <Route path="/runs/:runId" element={<RunDetail />} />

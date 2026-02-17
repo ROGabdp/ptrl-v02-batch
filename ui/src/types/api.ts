@@ -188,3 +188,91 @@ export interface EvalMetricsJobRequest {
     mode?: 'base' | 'finetune'
     dry_run?: boolean
 }
+
+// --- Daily Config Types ---
+
+export interface EntryThreshold {
+    min_conf: number
+    buy_frac: number
+}
+
+export interface EntryStrategy {
+    conf_thresholds: EntryThreshold[]
+    use_market_filter: boolean
+    min_days_between_entries: number
+}
+
+export interface ExitStrategy {
+    stop_loss_pct: number
+    take_profit_activation_pct: number
+    trail_stop_low_pct: number
+    trail_stop_high_pct: number
+    high_profit_threshold_pct?: number | null
+}
+
+export interface StrategyConfig {
+    entry?: EntryStrategy
+    exit?: ExitStrategy
+}
+
+export interface BacktestConfig {
+    start?: string | null
+    end?: string | null
+    initial_cash: number
+    yearly_contribution: number
+    benchmark: string
+}
+
+export interface ModelConfig {
+    registry_best_path: string
+    mode: string
+}
+
+export interface DataConfig {
+    provider: string
+    auto_update: boolean
+    data_root: string
+    download_start: string
+}
+
+export interface PerTickerConfig {
+    strategy?: StrategyConfig
+}
+
+export interface DailyConfig {
+    tickers: string[]
+    backtest: BacktestConfig
+    model: ModelConfig
+    data: DataConfig
+    strategy: StrategyConfig
+    per_ticker: Record<string, PerTickerConfig>
+}
+
+export interface DailyConfigResponse {
+    path: string
+    config: DailyConfig
+    saved_at?: string
+    config_hash?: string
+}
+
+export interface DailyRunRequest {
+    tickers?: string[]
+    dry_run: boolean
+    date_override?: {
+        start?: string | null
+        end?: string | null
+    }
+}
+
+export interface DailyJobItem {
+    ticker: string
+    job_id: string
+    job_url: string
+    status: string
+}
+
+export interface DailyBatchResponse {
+    batch_id: string
+    created_at: string
+    items: DailyJobItem[]
+}

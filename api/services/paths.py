@@ -27,5 +27,30 @@ def safe_join(base: Path, *paths: str) -> Path:
         raise ValueError("Access denied: Path traversal detected.")
     return full_path
 
-def get_project_root() -> Path:
-    return BASE_DIR
+def get_allow_write_paths() -> set[Path]:
+    """Return set of explicitly allowed paths for writing."""
+    return {
+        (BASE_DIR / "configs" / "daily_watchlist.yaml").resolve(),
+    }
+
+def validate_write_path(path: Path) -> None:
+    """
+    Validate that a path is allowed for writing.
+    1. Must be within BASE_DIR.
+    2. Must be in the allowed write list OR inside reports/daily/runtime/
+    """
+    resolved = path.resolve()
+    if not str(resolved).startswith(str(BASE_DIR.resolve())):
+         raise ValueError("Access denied: Path must be within project root.")
+    
+    # Specific allow list
+    allowed_files = get_allow_write_paths()
+    if resolved in allowed_files:
+        return
+
+    # Allow writing to daily runtime dir
+    daily_runtime = (BASE_DIR / "reports" / "daily" / "runtime").resolve()
+    if str(resolved).startswith(str(daily_runtime)):
+        return
+
+    raise ValueError(f"Access denied: Writing to {resolved} is not allowed.")

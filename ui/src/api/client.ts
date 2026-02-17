@@ -11,12 +11,16 @@ import {
     RunDetail,
     RunSummary,
     TrainJobRequest,
+    DailyConfig,
+    DailyConfigResponse,
+    DailyRunRequest,
+    DailyBatchResponse,
 } from '@/types/api'
 
 const API_BASE = '/api'
 
-async function fetchJson<T>(url: string): Promise<T> {
-    const response = await fetch(url)
+async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
+    const response = await fetch(url, init)
     if (!response.ok) {
         const errorText = await response.text()
         throw new Error(`API Error ${response.status}: ${errorText}`)
@@ -95,5 +99,16 @@ export const api = {
             if (params?.tail !== undefined) qs.append('tail', String(params.tail))
             return fetchJson<JobLogResponse>(`${API_BASE}/jobs/${jobId}/log?${qs.toString()}`)
         },
+    },
+    daily: {
+        getConfig: () => fetchJson<DailyConfigResponse>(`${API_BASE}/daily/config`),
+        saveConfig: (config: DailyConfig) =>
+            fetchJson<DailyConfigResponse>(`${API_BASE}/daily/config`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ config }),
+            }),
+        runBatch: (payload: DailyRunRequest) =>
+            postJson<DailyBatchResponse>(`${API_BASE}/daily/run-backtests`, payload),
     },
 }

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, Database, LayoutDashboard, PlayCircle, GitBranch, Workflow } from 'lucide-react'
+import { Activity, Database, LayoutDashboard, PlayCircle, GitBranch, Workflow, Calendar } from 'lucide-react'
 import clsx from 'clsx'
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -8,6 +8,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
     const navItems = [
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/daily', label: 'Daily', icon: Calendar },
         { path: '/registry', label: 'Registry', icon: Database },
         { path: '/runs', label: 'Runs', icon: Activity },
         { path: '/backtests', label: 'Backtests', icon: GitBranch },

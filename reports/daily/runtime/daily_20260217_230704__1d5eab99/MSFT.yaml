@@ -1,0 +1,32 @@
+version: 1
+backtest:
+  start: '2020-01-01'
+  end: '2026-02-17'
+  initial_cash: 2400.0
+  yearly_contribution: 2400.0
+  benchmark: ^IXIC
+  tickers:
+  - MSFT
+model:
+  registry_best_path: reports/registry/registry_best_by_ticker.csv
+  mode: finetune
+data:
+  provider: yfinance
+  auto_update: true
+  data_root: scripts/legacy/data/stocks
+  download_start: '2000-01-01'
+strategy:
+  entry:
+    conf_thresholds:
+    - min_conf: 0.95
+      buy_frac: 0.25
+    - min_conf: 0.9
+      buy_frac: 0.15
+    use_market_filter: true
+    min_days_between_entries: 0
+  exit:
+    stop_loss_pct: 0.08
+    take_profit_activation_pct: 0.2
+    trail_stop_low_pct: 0.08
+    trail_stop_high_pct: 0.17
+    high_profit_threshold_pct: 0.25
