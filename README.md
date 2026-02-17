@@ -166,7 +166,7 @@ python -m scripts.eval_metrics --run-dir runs/<run_id> --model runs/<run_id>/mod
 
 針對單一 ticker，搜尋 `(horizon_days, target_return)` 組合，使事件比例 `positive_rate` 接近指定目標（預設 50%），並同時輸出 train/val 的事件比例，幫助挑出 train/val 分佈更接近的 label 設定。
 
-### 基本用法
+### Label Balance Finder 基本用法
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -226,7 +226,7 @@ python -m scripts.index_runs --runs-dir runs --out-dir reports/registry
 - **`registry_models`**：所有 ticker-model 的完整列表（每個 ticker × 每個 run 為一列），含完整 metrics、模型路徑、label 目標。
 - **`registry_best_by_ticker`**：依選模邏輯，為每個 ticker 挑出最佳模型。
 
-### 基本用法
+### Registry Index 基本用法
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -314,7 +314,7 @@ per_ticker:
       stop_loss_pct: 0.10   # 全域預設 0.08，TSM 改為 0.10
 ```
 
-### 基本用法
+### Backtest 基本用法
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -373,7 +373,7 @@ Phase 2 Milestone 1 adds basic task execution from UI/API for three actions:
 - Runtime logs: `reports/jobs/runtime/<job_id>.log`
 - Keep `reports/jobs/.gitkeep` in git only to preserve folder structure.
 - `reports/jobs/runtime/` is ignored in git to avoid noisy, machine-specific runtime outputs and large log churn in commits.
-- API returns `artifacts_hint` with parsed `run_id` / `bt_run_id` when available, so UI can jump to Run/Backtest detail.
+- API returns `artifacts` with parsed `run_id` / `bt_run_id` when available, so UI can jump to Run/Backtest detail.
 
 ### UI usage
 
@@ -395,9 +395,8 @@ npm run dev
 
 ## 檔案編碼規範（避免亂碼）
 
-- 本專案所有文字檔統一使用 **UTF-8（無 BOM）**。
-- 請勿使用 Big5、CP950、UTF-16 或系統預設 ANSI 編碼寫入專案檔案。
-- 若以腳本寫檔，請明確指定 `encoding="utf-8"`。
+- 詳細規範以 `AGENTS.md` 的「檔案編碼規範」與「防亂碼寫檔流程（必須遵守）」為唯一準則。
+- README 僅保留摘要，避免與 `AGENTS.md` 發生規範漂移。
 
 ## GUI Phase 2 - Milestone 2
 
@@ -412,7 +411,7 @@ npm run dev
 - Registry 升級為伺服器端篩選、排序與分頁：
   - `GET /api/registry/models` 支援 `ticker`、`min_lift`、`min_precision`、`min_support`、`max_buy_rate`、`sort`、`limit`、`offset`。
   - 回傳格式：`{ items, total, limit, offset }`。
-  - UI 新增 compare drawer（最多 4 檔，且不可重複 ticker）。
+  - UI 新增 compare drawer（最多 4 檔，可重複 ticker）。
 
 - Actions 升級：
   - 支援 querystring 預填：
@@ -426,19 +425,5 @@ npm run dev
 
 ## 防亂碼寫檔流程（必須遵守）
 
-为避免出現 連續問號字元（例如四個問號） 或文字損壞，任何 agent 或腳本在寫入中文內容時，必須依下列流程執行：
-
-1. 統一使用 UTF-8（無 BOM）寫檔。
-2. 不可使用 shell 直接內嵌中文多行字串寫檔（容易受終端碼頁影響而變成 `?`）。
-3. 若需以腳本寫入中文，請使用下列安全方式之一：
-   - Python `Path.write_text(..., encoding="utf-8")`；
-   - 內文字串使用 Unicode escape（`\uXXXX`）；
-   - 或從已為 UTF-8 的範本檔載入後再寫回。
-4. 寫檔後必做驗證：
-   - 掃描是否出現 連續問號字元（例如四個問號）、`U+FFFD`（replacement char）。
-   - 重讀並確認關鍵段落的正體中文顯示正常。
-5. 若驗證失敗，不得提交或結束任務，必須先修正至通過驗證。
-
-### 禁止事項
-- 禁止使用 Big5、CP950、UTF-16、ANSI 寫入專案文字檔。
-- 禁止在未驗證的情況下宣稱「編碼正常」。
+- 本流程完整版本請以 `AGENTS.md` 為準。
+- README 僅保留入口，不重複維護完整條文。
