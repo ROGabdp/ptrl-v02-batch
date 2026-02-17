@@ -50,3 +50,6 @@
 - Do not commit secrets, API keys, or local environment files.
 - Prefer config-driven changes in `configs/` over hardcoded values.
 - Review artifact directories (`runs/`, `backtests/`, `reports/`) before committing to avoid large or transient outputs.
+
+## 文件與標註語言
+- 本專案所有新文件、README 更新、程式註解與操作標註，統一使用正體中文。

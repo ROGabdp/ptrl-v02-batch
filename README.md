@@ -1,19 +1,19 @@
 # ptrl-v02-batch
 
-¥»±M®×±Ä¥Î¡u³]©wÀÉÅX°Ê¡v°V½m¬yµ{¡A¨ã³Æ¥i°l·¹»P¥i­«²{ªº run ¥Ø¿ı¡G
+æœ¬å°ˆæ¡ˆæ¡ç”¨ã€Œè¨­å®šæª”é©…å‹•ã€è¨“ç·´æµç¨‹ï¼Œå…·å‚™å¯è¿½æº¯èˆ‡å¯é‡ç¾çš„ run ç›®éŒ„ï¼š
 
-- `run_id` ®æ¦¡©T©w¬°¡G`YYYYMMDD_HHMMSS__<config_hash8>`
-- ©Ò¦³¿é¥X¤@«ß¼g¤J¡G`runs/<run_id>/...`
-- ¤ä´© `--dry-run`¡Bresume/skip¡B`--force`¡Bgrid sweep
+- `run_id` æ ¼å¼å›ºå®šç‚ºï¼š`YYYYMMDD_HHMMSS__<config_hash8>`
+- æ‰€æœ‰è¼¸å‡ºä¸€å¾‹å¯«å…¥ï¼š`runs/<run_id>/...`
+- æ”¯æ´ `--dry-run`ã€resume/skipã€`--force`ã€grid sweep
 
-## Àô¹Ò»İ¨D
+## ç’°å¢ƒéœ€æ±‚
 
 - Python `3.10+`
-- «ØÄ³¨Ï¥Î Windows PowerShell + venv
+- å»ºè­°ä½¿ç”¨ Windows PowerShell + venv
 
-## §Ö³t¶}©l¡]Windows PowerShell¡^
+## å¿«é€Ÿé–‹å§‹ï¼ˆWindows PowerShellï¼‰
 
-¦b±M®×®Ú¥Ø¿ı°õ¦æ¡G
+åœ¨å°ˆæ¡ˆæ ¹ç›®éŒ„åŸ·è¡Œï¼š
 
 ```powershell
 python -m venv .venv
@@ -24,134 +24,134 @@ pip install -r requirements.txt
 
 ## GUI Dashboard (Phase 1)
 
-¥»±M®×´£¨Ñ¤@­Ó¥»¦a Web UI¡A¥Î©óÂsÄı Registry¡BTraining Runs »P Backtests µ²ªG¡C
+æœ¬å°ˆæ¡ˆæä¾›ä¸€å€‹æœ¬åœ° Web UIï¼Œç”¨æ–¼ç€è¦½ Registryã€Training Runs èˆ‡ Backtests çµæœã€‚
 
-### 1. ±Ò°Ê«áºİ API (Port 8000)
+### 1. å•Ÿå‹•å¾Œç«¯ API (Port 8000)
 
-¨Ï¥Î FastAPI ´£¨Ñ°ßÅª¸ê®Æ¤¶­±¡G
+ä½¿ç”¨ FastAPI æä¾›å”¯è®€è³‡æ–™ä»‹é¢ï¼š
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 uvicorn api.app:app --reload --port 8000
 ```
 
-- API ¤å¥ó¡Ghttp://localhost:8000/docs
-- ´ú¸Õ¡Ghttp://localhost:8000/api/registry/best
+- API æ–‡ä»¶ï¼šhttp://localhost:8000/docs
+- æ¸¬è©¦ï¼šhttp://localhost:8000/api/registry/best
 
-### 2. ±Ò°Ê«eºİ UI (Port 5173)
+### 2. å•Ÿå‹•å‰ç«¯ UI (Port 5173)
 
-¨Ï¥Î React + Vite (¤w³]©w Proxy Âàµo API ½Ğ¨D)¡G
+ä½¿ç”¨ React + Vite (å·²è¨­å®š Proxy è½‰ç™¼ API è«‹æ±‚)ï¼š
 
 ```powershell
 cd ui
-npm install  # ­º¦¸°õ¦æ
+npm install  # é¦–æ¬¡åŸ·è¡Œ
 npm run dev
 ```
 
-- ÂsÄı¾¹¶}±Ò¡Ghttp://localhost:5173
-- ¥\¯à¡G
-  - **Dashboard**: ¬d¬İ³Ì¨Î¼Ò«¬»P³Ìªñ°õ¦æ¬ö¿ı¡CPhase 1.5 ·s¼W Precision, Lift, Label, Pos Rate µ¥ÃöÁä«ü¼Ğ¡C
-  - **Registry**: ¿z¿ï»PÂsÄı©Ò¦³¤w¯Á¤Ş¼Ò«¬¡CPhase 1.5 ·s¼W Lift/Precision ¹LÂo¾¹»P¸Ô²Ó«ü¼Ğ (TP/FP, Pos Rate)¡C
-  - **Runs**: ¬d¬İ°V½m°Ñ¼Æ»P²£¥X¼Ò«¬¡CPhase 1.5 ¤ä´©¬d¬İ©Ò¦³ Checkpoints »P½Æ»s¼Ò«¬¸ô®|¡C
-  - **Backtests**: ¬d¬İ¦^´úÁZ®Ä¡BÅv¯q¦±½u (Equity Curve)¡CPhase 1.5 ·s¼Wµ¦²¤°Ñ¼ÆºK­n (Strategy Summary)¡B³Ì¤j¦^ºM°Ï¶¡ (MDD Window) »Pªñ´Á¥æ©ö¦Cªí (Recent Trades)¡C
+- ç€è¦½å™¨é–‹å•Ÿï¼šhttp://localhost:5173
+- åŠŸèƒ½ï¼š
+  - **Dashboard**: æŸ¥çœ‹æœ€ä½³æ¨¡å‹èˆ‡æœ€è¿‘åŸ·è¡Œç´€éŒ„ã€‚Phase 1.5 æ–°å¢ Precision, Lift, Label, Pos Rate ç­‰é—œéµæŒ‡æ¨™ã€‚
+  - **Registry**: ç¯©é¸èˆ‡ç€è¦½æ‰€æœ‰å·²ç´¢å¼•æ¨¡å‹ã€‚Phase 1.5 æ–°å¢ Lift/Precision éæ¿¾å™¨èˆ‡è©³ç´°æŒ‡æ¨™ (TP/FP, Pos Rate)ã€‚
+  - **Runs**: æŸ¥çœ‹è¨“ç·´åƒæ•¸èˆ‡ç”¢å‡ºæ¨¡å‹ã€‚Phase 1.5 æ”¯æ´æŸ¥çœ‹æ‰€æœ‰ Checkpoints èˆ‡è¤‡è£½æ¨¡å‹è·¯å¾‘ã€‚
+  - **Backtests**: æŸ¥çœ‹å›æ¸¬ç¸¾æ•ˆã€æ¬Šç›Šæ›²ç·š (Equity Curve)ã€‚Phase 1.5 æ–°å¢ç­–ç•¥åƒæ•¸æ‘˜è¦ (Strategy Summary)ã€æœ€å¤§å›æ’¤å€é–“ (MDD Window) èˆ‡è¿‘æœŸäº¤æ˜“åˆ—è¡¨ (Recent Trades)ã€‚
 
-## °V½m«eÀË¬d¡]«ØÄ³¥ı¶]¡^
+## è¨“ç·´å‰æª¢æŸ¥ï¼ˆå»ºè­°å…ˆè·‘ï¼‰
 
-¥ı°µ°®¶]¡A½T»{ config »P¬yµ{¥i¥¿±`«Ø¥ß run¡G
+å…ˆåšä¹¾è·‘ï¼Œç¢ºèª config èˆ‡æµç¨‹å¯æ­£å¸¸å»ºç«‹ runï¼š
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m scripts.run_experiment --config configs/base.yaml --dry-run
 ```
 
-­Y¦¨¥\¡Astdout ·|Åã¥Ü¡G
+è‹¥æˆåŠŸï¼Œstdout æœƒé¡¯ç¤ºï¼š
 
 - `run_id: ...`
 - `run_dir: runs/<run_id>`
 - `manifest: runs/<run_id>/manifest.json`
 
-## ¥¿¦¡°V½m¡]³æ¦¸¡^
+## æ­£å¼è¨“ç·´ï¼ˆå–®æ¬¡ï¼‰
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m scripts.run_experiment --config configs/base.yaml
 ```
 
-¹w³]¦æ¬°¡G
+é è¨­è¡Œç‚ºï¼š
 
-- pretrain universe¡G`NVDA, MSFT, AAPL, AMZN, META, AVGO, GOOGL, TSLA, NFLX, PLTR, TSM`
-- finetune tickers¡G`NVDA, GOOGL, TSM`
-- label¡G`horizon_days=20`¡B`threshold=0.10`
+- pretrain universeï¼š`NVDA, MSFT, AAPL, AMZN, META, AVGO, GOOGL, TSLA, NFLX, PLTR, TSM`
+- finetune tickersï¼š`NVDA, GOOGL, TSM`
+- labelï¼š`horizon_days=20`ã€`threshold=0.10`
 
-## °V½mºÊ±±¡]TensorBoard¡^
+## è¨“ç·´ç›£æ§ï¼ˆTensorBoardï¼‰
 
-°V½m¹Lµ{·|§â TensorBoard logs ¼g¦b `runs/<run_id>/tb/`¡C
+è¨“ç·´éç¨‹æœƒæŠŠ TensorBoard logs å¯«åœ¨ `runs/<run_id>/tb/`ã€‚
 
-±Ò°Ê¤è¦¡¡G
+å•Ÿå‹•æ–¹å¼ï¼š
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 tensorboard --logdir runs --port 6006
 ```
 
-ÂsÄı¾¹¶}±Ò¡G
+ç€è¦½å™¨é–‹å•Ÿï¼š
 
 - `http://localhost:6006`
 
-## Sweep¡]§å¦¸°Ñ¼Æ±½´y¡^
+## Sweepï¼ˆæ‰¹æ¬¡åƒæ•¸æƒæï¼‰
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m scripts.sweep --config configs/base.yaml --sweep configs/sweeps/label_grid.yaml
 ```
 
-¥uÀË¬d sweep ®i¶}¬yµ{¥i¥ı¥Î¡G
+åªæª¢æŸ¥ sweep å±•é–‹æµç¨‹å¯å…ˆç”¨ï¼š
 
 ```powershell
 python -m scripts.sweep --config configs/base.yaml --sweep configs/sweeps/label_grid.yaml --dry-run
 ```
 
-## ±`¥Î°Ñ¼Æ
+## å¸¸ç”¨åƒæ•¸
 
-- ±j¨î­«°V¡]©¿²¤ `final.zip` ªº skip §PÂ_¡^¡G
+- å¼·åˆ¶é‡è¨“ï¼ˆå¿½ç•¥ `final.zip` çš„ skip åˆ¤æ–·ï¼‰ï¼š
 
 ```powershell
 python -m scripts.run_experiment --config configs/base.yaml --force
 ```
 
-- Á{®ÉÂĞ¼g³]©w¡]dotted path¡^¡G
+- è‡¨æ™‚è¦†å¯«è¨­å®šï¼ˆdotted pathï¼‰ï¼š
 
 ```powershell
 python -m scripts.run_experiment --config configs/base.yaml --set label.horizon_days=40 --set label.threshold=0.15
 python -m scripts.run_experiment --config configs/base.yaml --set train.finetune.tickers='["NVDA","TSM"]'
 ```
 
-## Resume / Skip ³W«h
+## Resume / Skip è¦å‰‡
 
-- ­Y `runs/<run_id>/models/base/final.zip` ¤w¦s¦b¥B¥¼¥[ `--force`¡A·|¸õ¹L base °V½m¡C
-- ­Y `runs/<run_id>/models/finetuned/<TICKER>/final.zip` ¤w¦s¦b¥B¥¼¥[ `--force`¡A·|¸õ¹L¸Ó ticker ·L½Õ¡C
-- ­Y¥u¦³ `checkpoint_step_<N>.zip` / `best.zip` / `last.zip`¡A¦ı¨S¦³ `final.zip`¡A·|¹Á¸Õ±q³Ìªñª¬ºAÄò¶]¡C
+- è‹¥ `runs/<run_id>/models/base/final.zip` å·²å­˜åœ¨ä¸”æœªåŠ  `--force`ï¼Œæœƒè·³é base è¨“ç·´ã€‚
+- è‹¥ `runs/<run_id>/models/finetuned/<TICKER>/final.zip` å·²å­˜åœ¨ä¸”æœªåŠ  `--force`ï¼Œæœƒè·³éè©² ticker å¾®èª¿ã€‚
+- è‹¥åªæœ‰ `checkpoint_step_<N>.zip` / `best.zip` / `last.zip`ï¼Œä½†æ²’æœ‰ `final.zip`ï¼Œæœƒå˜—è©¦å¾æœ€è¿‘ç‹€æ…‹çºŒè·‘ã€‚
 
-## ­«¶]µû¦ô (Re-run Metrics)
+## é‡è·‘è©•ä¼° (Re-run Metrics)
 
-­Y»İ¹ï¤w¦s¦bªº run ­«ºâµû¦ô«ü¼Ğ¡]§t `buy_rate`, `positive_rate`, confusion matrix µ¥¡^¡A¥i¨Ï¥Î `scripts.eval_metrics`¡G
+è‹¥éœ€å°å·²å­˜åœ¨çš„ run é‡ç®—è©•ä¼°æŒ‡æ¨™ï¼ˆå« `buy_rate`, `positive_rate`, confusion matrix ç­‰ï¼‰ï¼Œå¯ä½¿ç”¨ `scripts.eval_metrics`ï¼š
 
 ```powershell
-# °ò¥»¥Îªk (¹w³]¨Ï¥Î finetuned ¼Ò«¬)
+# åŸºæœ¬ç”¨æ³• (é è¨­ä½¿ç”¨ finetuned æ¨¡å‹)
 python -m scripts.eval_metrics --run-dir runs/<run_id>
 
-# «ü©w¨Ï¥Î Base Model µû¦ô©Ò¦³ Tickers
+# æŒ‡å®šä½¿ç”¨ Base Model è©•ä¼°æ‰€æœ‰ Tickers
 python -m scripts.eval_metrics --run-dir runs/<run_id> --mode base
 
-# ±j¨î«ü©w¯S©w Model ÀÉ
+# å¼·åˆ¶æŒ‡å®šç‰¹å®š Model æª”
 python -m scripts.eval_metrics --run-dir runs/<run_id> --model runs/<run_id>/models/base/best.zip
 ```
 
-³o±N·|§ó·s `runs/<run_id>/metrics.json`¡C
+é€™å°‡æœƒæ›´æ–° `runs/<run_id>/metrics.json`ã€‚
 
-## °õ¦æ²£¥X
+## åŸ·è¡Œç”¢å‡º
 
-¨C¦¸°õ¦æ³£·|«Ø¥ß¿W¥ß¥Ø¿ı¡G
+æ¯æ¬¡åŸ·è¡Œéƒ½æœƒå»ºç«‹ç¨ç«‹ç›®éŒ„ï¼š
 
 - `runs/<run_id>/config.yaml`
 - `runs/<run_id>/data_manifest.json`
@@ -164,180 +164,180 @@ python -m scripts.eval_metrics --run-dir runs/<run_id> --model runs/<run_id>/mod
 
 ## Label Balance Finder
 
-°w¹ï³æ¤@ ticker¡A·j´M `(horizon_days, target_return)` ²Õ¦X¡A¨Ï¨Æ¥ó¤ñ¨Ò `positive_rate` ±µªñ«ü©w¥Ø¼Ğ¡]¹w³] 50%¡^¡A¨Ã¦P®É¿é¥X train/val ªº¨Æ¥ó¤ñ¨Ò¡AÀ°§U¬D¥X train/val ¤À§G§ó±µªñªº label ³]©w¡C
+é‡å°å–®ä¸€ tickerï¼Œæœå°‹ `(horizon_days, target_return)` çµ„åˆï¼Œä½¿äº‹ä»¶æ¯”ä¾‹ `positive_rate` æ¥è¿‘æŒ‡å®šç›®æ¨™ï¼ˆé è¨­ 50%ï¼‰ï¼Œä¸¦åŒæ™‚è¼¸å‡º train/val çš„äº‹ä»¶æ¯”ä¾‹ï¼Œå¹«åŠ©æŒ‘å‡º train/val åˆ†ä½ˆæ›´æ¥è¿‘çš„ label è¨­å®šã€‚
 
-### °ò¥»¥Îªk
+### åŸºæœ¬ç”¨æ³•
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m scripts.find_label_balance --ticker GOOGL --config configs/base.yaml --horizons 10,20,40 --returns 0.05,0.08,0.10,0.12,0.15 --target-rate 0.5 --top-k 10
 ```
 
-### Dry Run¡]¹wÄı¼Ò¦¡¡^
+### Dry Runï¼ˆé è¦½æ¨¡å¼ï¼‰
 
 ```powershell
 python -m scripts.find_label_balance --ticker NVDA --dry-run
 ```
 
-### ¿é¥X¨ìÀÉ®×
+### è¼¸å‡ºåˆ°æª”æ¡ˆ
 
-³ÌÂ²¤è¦¡¡G¥[¤W `--save`¡A¸}¥»·|¦Û°Ê²£¥Í¥iÅªÀÉ¦W¨Ã¼g¤J `reports/label_balance/`¡G
+æœ€ç°¡æ–¹å¼ï¼šåŠ ä¸Š `--save`ï¼Œè…³æœ¬æœƒè‡ªå‹•ç”¢ç”Ÿå¯è®€æª”åä¸¦å¯«å…¥ `reports/label_balance/`ï¼š
 
 ```powershell
-# ¦Û°Ê©R¦W CSV¡]¹w³]®æ¦¡¡^
+# è‡ªå‹•å‘½å CSVï¼ˆé è¨­æ ¼å¼ï¼‰
 python -m scripts.find_label_balance --ticker TSM --config configs/base.yaml --horizons 10,20,60,120 --returns 0.1,0.15,0.2,0.25 --split both --target-rate 0.5 --top-k 10 --save
 
-# ¦Û°Ê©R¦W JSON
+# è‡ªå‹•å‘½å JSON
 python -m scripts.find_label_balance --ticker TSM --horizons 10,20,60,120 --returns 0.1,0.15,0.2,0.25 --save --format json
 ```
 
-¤]¥i¤â°Ê«ü©w¸ô®|¡]¦V«á¬Û®e¡^¡G
+ä¹Ÿå¯æ‰‹å‹•æŒ‡å®šè·¯å¾‘ï¼ˆå‘å¾Œç›¸å®¹ï¼‰ï¼š
 
 ```powershell
 python -m scripts.find_label_balance --ticker NVDA --out label_balance__NVDA__both__20260215.csv
 python -m scripts.find_label_balance --ticker NVDA --out result.json
 ```
 
-- ¿é¥XÀÉ¹w³]¦ì¸m¬° `reports/label_balance/`¡A**¤£·|**¼g¨ì `runs/`¡C
-- ¹w³]¤£¼gÀÉ¡A¶È¿é¥X¨ì stdout¡C
-- `--save` + `--out` ¦P®Éµ¹®É¡A¥H `--out` ¬°·Ç¡C
+- è¼¸å‡ºæª”é è¨­ä½ç½®ç‚º `reports/label_balance/`ï¼Œ**ä¸æœƒ**å¯«åˆ° `runs/`ã€‚
+- é è¨­ä¸å¯«æª”ï¼Œåƒ…è¼¸å‡ºåˆ° stdoutã€‚
+- `--save` + `--out` åŒæ™‚çµ¦æ™‚ï¼Œä»¥ `--out` ç‚ºæº–ã€‚
 
-### ±Æ§Ç³W«h
+### æ’åºè¦å‰‡
 
-- `--split both`¡]¹w³]¡^¡G¨Ì `|val_rate - target|` ¡÷ `|train_rate - target|` ¡÷ `|train - val|` ¡÷ `N` ±Æ§Ç
-- `--split val`¡G¶È¨Ì `|val_rate - target|` ¡÷ `N_val` ±Æ§Ç
-- `--split train`¡G¶È¨Ì `|train_rate - target|` ¡÷ `N_train` ±Æ§Ç
+- `--split both`ï¼ˆé è¨­ï¼‰ï¼šä¾ `|val_rate - target|` â†’ `|train_rate - target|` â†’ `|train - val|` â†’ `N` æ’åº
+- `--split val`ï¼šåƒ…ä¾ `|val_rate - target|` â†’ `N_val` æ’åº
+- `--split train`ï¼šåƒ…ä¾ `|train_rate - target|` â†’ `N_train` æ’åº
 
 ## Model Registry
 
-·í `runs/` ¸Ìªº run ¶V¨Ó¶V¦h¡A«ÜÃø¤@²´¬İ¥X¨C­Ó ticker ¦³­ş¨Ç¼Ò«¬¡B¦U¦Ûªº label ¥Ø¼Ğ©M metrics¡C`index_runs` ¤u¨ã·|±½´y©Ò¦³ run¡A«Ø¥ß¨â¥÷¯Á¤Ş¡G
+ç•¶ `runs/` è£¡çš„ run è¶Šä¾†è¶Šå¤šï¼Œå¾ˆé›£ä¸€çœ¼çœ‹å‡ºæ¯å€‹ ticker æœ‰å“ªäº›æ¨¡å‹ã€å„è‡ªçš„ label ç›®æ¨™å’Œ metricsã€‚`index_runs` å·¥å…·æœƒæƒææ‰€æœ‰ runï¼Œå»ºç«‹å…©ä»½ç´¢å¼•ï¼š
 
-- **`registry_models`**¡G©Ò¦³ ticker-model ªº§¹¾ã¦Cªí¡]¨C­Ó ticker ¡Ñ ¨C­Ó run ¬°¤@¦C¡^¡A§t§¹¾ã metrics¡B¼Ò«¬¸ô®|¡Blabel ¥Ø¼Ğ¡C
-- **`registry_best_by_ticker`**¡G¨Ì¿ï¼ÒÅŞ¿è¡A¬°¨C­Ó ticker ¬D¥X³Ì¨Î¼Ò«¬¡C
+- **`registry_models`**ï¼šæ‰€æœ‰ ticker-model çš„å®Œæ•´åˆ—è¡¨ï¼ˆæ¯å€‹ ticker Ã— æ¯å€‹ run ç‚ºä¸€åˆ—ï¼‰ï¼Œå«å®Œæ•´ metricsã€æ¨¡å‹è·¯å¾‘ã€label ç›®æ¨™ã€‚
+- **`registry_best_by_ticker`**ï¼šä¾é¸æ¨¡é‚è¼¯ï¼Œç‚ºæ¯å€‹ ticker æŒ‘å‡ºæœ€ä½³æ¨¡å‹ã€‚
 
-### °ò¥»¥Îªk
+### åŸºæœ¬ç”¨æ³•
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 python -m scripts.index_runs --runs-dir runs --out-dir reports/registry
 ```
 
-¨C¦¸°õ¦æ³£·|**ÂĞ»\§ó·s** `reports/registry/` ¤U¥|­ÓÀÉ®×¡G
-`registry_models.csv` / `.json`¡B`registry_best_by_ticker.csv` / `.json`
+æ¯æ¬¡åŸ·è¡Œéƒ½æœƒ**è¦†è“‹æ›´æ–°** `reports/registry/` ä¸‹å››å€‹æª”æ¡ˆï¼š
+`registry_models.csv` / `.json`ã€`registry_best_by_ticker.csv` / `.json`
 
-### ¿ï¼Ò¬yµ{¡]best_by_ticker¡^
+### é¸æ¨¡æµç¨‹ï¼ˆbest_by_tickerï¼‰
 
-1. **½T«O¤ñ¶Ã¶R¦n**¡G`lift >= 1.10`¡]precision / positive_rate¡F¦Ü¤Ö¤ñÀH¾÷¶R¤J´£¤É 10%¡AÁ×§K¡u¨Æ¥ó¤Ó®e©ö¡A¶Ã¶R¤]·Ç¡vªº°²¶H¡^
-2. **½T«O¨Æ¥óÃ­©w**¡G`tp >= 30`¡]Á×§K¨Æ¥ó¤Óµ}¦³Åı lift/precision µê°ª¡^
-3. **¡]¥i¿ï¡^­­¨î¥X¤âÀW²v**¡G­Y«ü©w `--buy-rate-max`¡A¤~¹LÂo `buy_rate <= ¤W­­`
-4. **±Æ§Ç**¡]¹w³] `precision_first`¡^¡Gprecision ¡õ ¡÷ lift ¡õ ¡÷ buy_rate ¡ô ¡÷ support ¡õ
+1. **ç¢ºä¿æ¯”äº‚è²·å¥½**ï¼š`lift >= 1.10`ï¼ˆprecision / positive_rateï¼›è‡³å°‘æ¯”éš¨æ©Ÿè²·å…¥æå‡ 10%ï¼Œé¿å…ã€Œäº‹ä»¶å¤ªå®¹æ˜“ï¼Œäº‚è²·ä¹Ÿæº–ã€çš„å‡è±¡ï¼‰
+2. **ç¢ºä¿äº‹ä»¶ç©©å®š**ï¼š`tp >= 30`ï¼ˆé¿å…äº‹ä»¶å¤ªç¨€æœ‰è®“ lift/precision è™›é«˜ï¼‰
+3. **ï¼ˆå¯é¸ï¼‰é™åˆ¶å‡ºæ‰‹é »ç‡**ï¼šè‹¥æŒ‡å®š `--buy-rate-max`ï¼Œæ‰éæ¿¾ `buy_rate <= ä¸Šé™`
+4. **æ’åº**ï¼ˆé è¨­ `precision_first`ï¼‰ï¼šprecision â†“ â†’ lift â†“ â†’ buy_rate â†‘ â†’ support â†“
 
-> **¬°¤°»ò buy_rate ¤£°µµw¹LÂo¡H**
-> `buy_rate` ¥Nªí¥X¤âÀW²v¡A¬O¥æ©ö°¾¦n¦Ó«D«~½è«ü¼Ğ¡C¤@­Ó buy_rate=0.50 ¦ı precision=0.70 ªº¼Ò«¬¡A¤´µM¬O¦n¼Ò«¬¡]¥u¬O¤ñ¸û¿n·¥¡^¡C
-> ¯u¥¿§PÂ_¡u¬O§_¶Ã¶R¡vÀ³¬İ `lift` ©M `precision`¡C¦pªG§A·Q­n§ó«O¦uªºµ¦²¤¡]¤Ö¥X¤â¡^¡A¥i¥H¥[ `--buy-rate-max 0.35`¡C
+> **ç‚ºä»€éº¼ buy_rate ä¸åšç¡¬éæ¿¾ï¼Ÿ**
+> `buy_rate` ä»£è¡¨å‡ºæ‰‹é »ç‡ï¼Œæ˜¯äº¤æ˜“åå¥½è€Œéå“è³ªæŒ‡æ¨™ã€‚ä¸€å€‹ buy_rate=0.50 ä½† precision=0.70 çš„æ¨¡å‹ï¼Œä»ç„¶æ˜¯å¥½æ¨¡å‹ï¼ˆåªæ˜¯æ¯”è¼ƒç©æ¥µï¼‰ã€‚
+> çœŸæ­£åˆ¤æ–·ã€Œæ˜¯å¦äº‚è²·ã€æ‡‰çœ‹ `lift` å’Œ `precision`ã€‚å¦‚æœä½ æƒ³è¦æ›´ä¿å®ˆçš„ç­–ç•¥ï¼ˆå°‘å‡ºæ‰‹ï¼‰ï¼Œå¯ä»¥åŠ  `--buy-rate-max 0.35`ã€‚
 
-### ­YµL¼Ò«¬³q¹L
+### è‹¥ç„¡æ¨¡å‹é€šé
 
-­Y¬Y ticker µL¥ô¦ó¼Ò«¬³q¹L¹LÂo¡A¤u¨ã·|©ñ¼eªùÂe¡]`lift >= 1.0`¡B`tp >= 1`¡^¡A¬D¥X³Ì±µªñªº­Ô¿ï¡A¨Ã¼Ğ°O `best_status="NO_PASS: <­ì¦]>"`¡C
+è‹¥æŸ ticker ç„¡ä»»ä½•æ¨¡å‹é€šééæ¿¾ï¼Œå·¥å…·æœƒæ”¾å¯¬é–€æª»ï¼ˆ`lift >= 1.0`ã€`tp >= 1`ï¼‰ï¼ŒæŒ‘å‡ºæœ€æ¥è¿‘çš„å€™é¸ï¼Œä¸¦æ¨™è¨˜ `best_status="NO_PASS: <åŸå› >"`ã€‚
 
-### ¥Îªk½d¨Ò
+### ç”¨æ³•ç¯„ä¾‹
 
 ```powershell
-# ¹w³]¡]buy_rate ¤£¹LÂo¡Alift >= 1.10¡Atp >= 30¡^
+# é è¨­ï¼ˆbuy_rate ä¸éæ¿¾ï¼Œlift >= 1.10ï¼Œtp >= 30ï¼‰
 python -m scripts.index_runs --runs-dir runs --out-dir reports/registry
 
-# ©ñ¼e lift ªùÂe¡]¥]§t§ó±µªñ¶Ã¶R¤ô·Çªº¼Ò«¬¡^
+# æ”¾å¯¬ lift é–€æª»ï¼ˆåŒ…å«æ›´æ¥è¿‘äº‚è²·æ°´æº–çš„æ¨¡å‹ï¼‰
 python -m scripts.index_runs --runs-dir runs --out-dir reports/registry --lift-min 1.05
 
-# ±Ò¥Î¤Ö¥X¤â­­¨î¡]§ó«O¦uµ¦²¤¡^
+# å•Ÿç”¨å°‘å‡ºæ‰‹é™åˆ¶ï¼ˆæ›´ä¿å®ˆç­–ç•¥ï¼‰
 python -m scripts.index_runs --runs-dir runs --out-dir reports/registry --buy-rate-max 0.35
 
-# ½Õ¾ã min_tp¡]­n¨D§ó¦h TP ¼Ë¥»¡^
+# èª¿æ•´ min_tpï¼ˆè¦æ±‚æ›´å¤š TP æ¨£æœ¬ï¼‰
 python -m scripts.index_runs --runs-dir runs --out-dir reports/registry --min-tp 50
 
-# §ï¥Î lift Àu¥ı±Æ§Ç
+# æ”¹ç”¨ lift å„ªå…ˆæ’åº
 python -m scripts.index_runs --sort-preset lift_first
 
-# ¥u¿é¥X CSV / ¥]§t¯ÊÀÉ run
+# åªè¼¸å‡º CSV / åŒ…å«ç¼ºæª” run
 python -m scripts.index_runs --format csv --include-incomplete
 ```
 
-## Backtesting¡]¦^´ú¡^
+## Backtestingï¼ˆå›æ¸¬ï¼‰
 
-¨Ï¥Î°V½m¥Xªº¼Ò«¬¶i¦æ config-driven ¦^´ú¡A¤ä´© per-ticker µ¦²¤ÂĞ¼g»PµøÄ±¤Æ¿é¥X¡C
+ä½¿ç”¨è¨“ç·´å‡ºçš„æ¨¡å‹é€²è¡Œ config-driven å›æ¸¬ï¼Œæ”¯æ´ per-ticker ç­–ç•¥è¦†å¯«èˆ‡è¦–è¦ºåŒ–è¼¸å‡ºã€‚
 
-### ¿é¥X¦ì¸m
+### è¼¸å‡ºä½ç½®
 
-- ¦^´ú²£ª«¼g¤J `backtests/<bt_run_id>/`¡]**¤£¶i git**¡A¤w¥[¤J `.gitignore`¡^
-- ¨C­Ó ticker ·|²£¥Í¿W¥ßªº `bt_run_id` ¥Ø¿ı
-- ¨C¦¸¦^´ú¿é¥X¡G`config.yaml`¡B`selection.json`¡B`trades.csv`¡B`equity.csv`¡B`metrics.json`¡B`summary.txt`¡B`plots/equity_curve.png`
-- **¸ò³æºK­n**¡G¥t¥~²£¥X `end_date_summary_<TICKER>_<START>_<END>.txt`¡A¥]§t¥«³õ¼Æ¾Ú¡BAI «H¸¹¡B±b¤áª¬ºA¡B«ù­Ü°±·l/°±§Q»ù¦ì¡B©ú¤é¥æ©ö«ØÄ³
+- å›æ¸¬ç”¢ç‰©å¯«å…¥ `backtests/<bt_run_id>/`ï¼ˆ**ä¸é€² git**ï¼Œå·²åŠ å…¥ `.gitignore`ï¼‰
+- æ¯å€‹ ticker æœƒç”¢ç”Ÿç¨ç«‹çš„ `bt_run_id` ç›®éŒ„
+- æ¯æ¬¡å›æ¸¬è¼¸å‡ºï¼š`config.yaml`ã€`selection.json`ã€`trades.csv`ã€`equity.csv`ã€`metrics.json`ã€`summary.txt`ã€`plots/equity_curve.png`
+- **è·Ÿå–®æ‘˜è¦**ï¼šå¦å¤–ç”¢å‡º `end_date_summary_<TICKER>_<START>_<END>.txt`ï¼ŒåŒ…å«å¸‚å ´æ•¸æ“šã€AI ä¿¡è™Ÿã€å¸³æˆ¶ç‹€æ…‹ã€æŒå€‰åœæ/åœåˆ©åƒ¹ä½ã€æ˜æ—¥äº¤æ˜“å»ºè­°
 
-### ¹w³]¤é´Á°Ï¶¡
+### é è¨­æ—¥æœŸå€é–“
 
-CLI ¥¼«ü©w `--start` / `--end` ®É¡A¨Ï¥Î `configs/backtest/base.yaml` ¤¤ªº¹w³]­È¡G
+CLI æœªæŒ‡å®š `--start` / `--end` æ™‚ï¼Œä½¿ç”¨ `configs/backtest/base.yaml` ä¸­çš„é è¨­å€¼ï¼š
 
-| Äæ¦ì | ¹w³]­È |
+| æ¬„ä½ | é è¨­å€¼ |
 |------|--------|
 | start | 2017-10-16 |
 | end | 2023-10-15 |
 
-­Y¥u«ü©w `--start`¡]¥¼µ¹ `--end`¡^¡A`end` **¦Û°Ê¨Ï¥Î¤µ¤Ñ¤é´Á**¡A¨Ã¦Û°Ê§ó·s¥»¦a CSV §Ö¨ú¡C
+è‹¥åªæŒ‡å®š `--start`ï¼ˆæœªçµ¦ `--end`ï¼‰ï¼Œ`end` **è‡ªå‹•ä½¿ç”¨ä»Šå¤©æ—¥æœŸ**ï¼Œä¸¦è‡ªå‹•æ›´æ–°æœ¬åœ° CSV å¿«å–ã€‚
 
-### ¼Ò«¬¨Ó·½
+### æ¨¡å‹ä¾†æº
 
-¹w³]±q `reports/registry/registry_best_by_ticker.csv` ¿ï¼Ò¡C¤]¥i³z¹L `--model-path` ±j¨î«ü©w¡C
+é è¨­å¾ `reports/registry/registry_best_by_ticker.csv` é¸æ¨¡ã€‚ä¹Ÿå¯é€é `--model-path` å¼·åˆ¶æŒ‡å®šã€‚
 
-¦^´ú·|¦Û°Ê±q registry ¹ïÀ³ªº `config_path` Åª¨ú°V½m config¡A½T«O¯S¼x¡]feature_cols¡Bfeature params¡^»P°V½m®É¤@­P¡C
+å›æ¸¬æœƒè‡ªå‹•å¾ registry å°æ‡‰çš„ `config_path` è®€å–è¨“ç·´ configï¼Œç¢ºä¿ç‰¹å¾µï¼ˆfeature_colsã€feature paramsï¼‰èˆ‡è¨“ç·´æ™‚ä¸€è‡´ã€‚
 
-### per_ticker µ¦²¤ÂĞ¼g
+### per_ticker ç­–ç•¥è¦†å¯«
 
-`configs/backtest/base.yaml` ¤¤ªº `strategy` ¬°¥ş°ì¹w³]¡A`per_ticker` °Ï¶ô¥i¬°­Ó§O ticker ÂĞ¼g®t²§­È¡]²`¼h merge¡^¡C
+`configs/backtest/base.yaml` ä¸­çš„ `strategy` ç‚ºå…¨åŸŸé è¨­ï¼Œ`per_ticker` å€å¡Šå¯ç‚ºå€‹åˆ¥ ticker è¦†å¯«å·®ç•°å€¼ï¼ˆæ·±å±¤ mergeï¼‰ã€‚
 
-¨Ò¦p TSM ¨Ï¥Î§ó¼eªº°±·l¡G
+ä¾‹å¦‚ TSM ä½¿ç”¨æ›´å¯¬çš„åœæï¼š
 
 ```yaml
 per_ticker:
   TSM:
     exit:
-      stop_loss_pct: 0.10   # ¥ş°ì¹w³] 0.08¡ATSM §ï¬° 0.10
+      stop_loss_pct: 0.10   # å…¨åŸŸé è¨­ 0.08ï¼ŒTSM æ”¹ç‚º 0.10
 ```
 
-### °ò¥»¥Îªk
+### åŸºæœ¬ç”¨æ³•
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 
-# 1) ¥Î¹w³]°Ï¶¡¡]2017-10-16 ~ 2023-10-15¡^
+# 1) ç”¨é è¨­å€é–“ï¼ˆ2017-10-16 ~ 2023-10-15ï¼‰
 python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker NVDA
 
-# 2) ¥u«ü©w start¡Aend ¦Û°Ê today¡]¦Û°Ê§ó·s¸ê®Æ¡^
+# 2) åªæŒ‡å®š startï¼Œend è‡ªå‹• todayï¼ˆè‡ªå‹•æ›´æ–°è³‡æ–™ï¼‰
 python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker NVDA --start 2025-12-09
 
-# 3) «ü©w§¹¾ã°Ï¶¡
+# 3) æŒ‡å®šå®Œæ•´å€é–“
 python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker NVDA --start 2025-12-09 --end 2026-02-14
 
-# 4) ¦hÀÉ
+# 4) å¤šæª”
 python -m scripts.run_backtest --config configs/backtest/base.yaml --tickers NVDA,GOOGL,TSM
 
-# 5) ÂĞ¼gµ¦²¤°Ñ¼Æ
+# 5) è¦†å¯«ç­–ç•¥åƒæ•¸
 python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker TSM --set strategy.exit.stop_loss_pct=0.10
 
-# 6) dry-run¡]¥u¦LºK­n¡A¤£¦^´ú¡^
+# 6) dry-runï¼ˆåªå°æ‘˜è¦ï¼Œä¸å›æ¸¬ï¼‰
 python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker GOOGL --dry-run
 
-# 7) Ãö³¬µe¹Ï
+# 7) é—œé–‰ç•«åœ–
 python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker GOOGL --no-plot
 ```
 
-## ±`¨£°İÃD
+## å¸¸è¦‹å•é¡Œ
 
-- `ModuleNotFoundError: No module named 'yaml'`¡G
-  - ¥ı½T»{¤w±Ò¥Î venv¡A¦A°õ¦æ `pip install -r requirements.txt`¡C
-- `tensorboard` «ü¥O§ä¤£¨ì¡G
-  - ½T»{ venv ¤w±Ò¥Î¨Ã­«·s°õ¦æ `pip install -r requirements.txt`¡C
-- PowerShell µLªk±Ò¥Î¸}¥»¡G
-  - ¥i¥ı°õ¦æ `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`¡]¶È·í«eµøµ¡¦³®Ä¡^¡C
+- `ModuleNotFoundError: No module named 'yaml'`ï¼š
+  - å…ˆç¢ºèªå·²å•Ÿç”¨ venvï¼Œå†åŸ·è¡Œ `pip install -r requirements.txt`ã€‚
+- `tensorboard` æŒ‡ä»¤æ‰¾ä¸åˆ°ï¼š
+  - ç¢ºèª venv å·²å•Ÿç”¨ä¸¦é‡æ–°åŸ·è¡Œ `pip install -r requirements.txt`ã€‚
+- PowerShell ç„¡æ³•å•Ÿç”¨è…³æœ¬ï¼š
+  - å¯å…ˆåŸ·è¡Œ `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`ï¼ˆåƒ…ç•¶å‰è¦–çª—æœ‰æ•ˆï¼‰ã€‚
 
 ## GUI Phase 2 - Jobs (Milestone 1)
 
