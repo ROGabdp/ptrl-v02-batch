@@ -1,12 +1,14 @@
-
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
-import Dashboard from '@/pages/Dashboard'
-import Registry from '@/pages/Registry'
-import Runs from '@/pages/Runs'
-import RunDetail from '@/pages/RunDetail'
-import Backtests from '@/pages/Backtests'
+import Actions from '@/pages/Actions'
 import BacktestDetail from '@/pages/BacktestDetail'
+import Backtests from '@/pages/Backtests'
+import Dashboard from '@/pages/Dashboard'
+import JobDetail from '@/pages/JobDetail'
+import Jobs from '@/pages/Jobs'
+import Registry from '@/pages/Registry'
+import RunDetail from '@/pages/RunDetail'
+import Runs from '@/pages/Runs'
 
 function App() {
     return (
@@ -19,6 +21,9 @@ function App() {
                     <Route path="/runs/:runId" element={<RunDetail />} />
                     <Route path="/backtests" element={<Backtests />} />
                     <Route path="/backtests/:btId" element={<BacktestDetail />} />
+                    <Route path="/jobs" element={<Jobs />} />
+                    <Route path="/jobs/:jobId" element={<JobDetail />} />
+                    <Route path="/actions" element={<Actions />} />
                 </Routes>
             </Layout>
         </BrowserRouter>

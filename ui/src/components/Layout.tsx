@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Database, Activity, GitBranch } from 'lucide-react'
+import { Activity, Database, LayoutDashboard, PlayCircle, GitBranch, Workflow } from 'lucide-react'
 import clsx from 'clsx'
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -11,11 +11,12 @@ export function Layout({ children }: { children: ReactNode }) {
         { path: '/registry', label: 'Registry', icon: Database },
         { path: '/runs', label: 'Runs', icon: Activity },
         { path: '/backtests', label: 'Backtests', icon: GitBranch },
+        { path: '/jobs', label: 'Jobs', icon: Workflow },
+        { path: '/actions', label: 'Actions', icon: PlayCircle },
     ]
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            {/* Sidebar */}
             <aside className="w-64 bg-white border-r border-gray-200 fixed h-full">
                 <div className="h-16 flex items-center px-6 border-b border-gray-200">
                     <span className="text-xl font-bold text-indigo-600">PTRL v02</span>
@@ -23,19 +24,21 @@ export function Layout({ children }: { children: ReactNode }) {
                 <nav className="p-4 space-y-1">
                     {navItems.map((item) => {
                         const Icon = item.icon
-                        const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path))
+                        const isActive =
+                            location.pathname === item.path ||
+                            (item.path !== '/' && location.pathname.startsWith(item.path))
                         return (
                             <Link
                                 key={item.path}
                                 to={item.path}
                                 className={clsx(
-                                    "flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors",
+                                    'flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors',
                                     isActive
-                                        ? "bg-indigo-50 text-indigo-700"
-                                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                        ? 'bg-indigo-50 text-indigo-700'
+                                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
                                 )}
                             >
-                                <Icon className={clsx("mr-3 h-5 w-5", isActive ? "text-indigo-600" : "text-gray-400")} />
+                                <Icon className={clsx('mr-3 h-5 w-5', isActive ? 'text-indigo-600' : 'text-gray-400')} />
                                 {item.label}
                             </Link>
                         )
@@ -43,11 +46,8 @@ export function Layout({ children }: { children: ReactNode }) {
                 </nav>
             </aside>
 
-            {/* Main Content */}
             <main className="flex-1 ml-64 p-8">
-                <div className="max-w-7xl mx-auto">
-                    {children}
-                </div>
+                <div className="max-w-7xl mx-auto">{children}</div>
             </main>
         </div>
     )

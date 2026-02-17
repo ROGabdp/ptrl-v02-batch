@@ -338,3 +338,44 @@ python -m scripts.run_backtest --config configs/backtest/base.yaml --ticker GOOG
   - 確認 venv 已啟用並重新執行 `pip install -r requirements.txt`。
 - PowerShell 無法啟用腳本：
   - 可先執行 `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`（僅當前視窗有效）。
+
+## GUI Phase 2 - Jobs (Milestone 1)
+
+Phase 2 Milestone 1 adds basic task execution from UI/API for three actions:
+
+- Train: `python -m scripts.run_experiment --config <path> [--set ...]`
+- Backtest: `python -m scripts.run_backtest --config <path> [--ticker/--tickers] [--start] [--end] [--set ...]`
+- Recompute metrics: `python -m scripts.eval_metrics --run-dir runs/<run_id> [--mode base|finetune]`
+
+### API endpoints
+
+- `POST /api/jobs/train`
+- `POST /api/jobs/backtest`
+- `POST /api/jobs/eval-metrics`
+- `GET /api/jobs/recent?limit=50`
+- `GET /api/jobs/{job_id}`
+- `GET /api/jobs/{job_id}/log`
+
+### Job artifacts
+
+- Metadata: `reports/jobs/<job_id>.json` (recommended to keep)
+- Logs: `reports/jobs/<job_id>.log`
+- API returns `artifacts_hint` with parsed `run_id` / `bt_run_id` when available, so UI can jump to Run/Backtest detail.
+
+### UI usage
+
+1. Start backend and frontend:
+
+```powershell
+uvicorn api.app:app --reload --port 8000
+cd ui
+npm run dev
+```
+
+2. Use these pages:
+
+- `/actions`: simple forms to trigger Train/Backtest jobs.
+- `/runs/:runId`: click **Recompute Metrics** to create eval job.
+- `/registry` and Dashboard best-model cards: click **Run Backtest**.
+- `/jobs`: monitor recent jobs (status polling every few seconds).
+- `/jobs/:jobId`: inspect command metadata and live log output.

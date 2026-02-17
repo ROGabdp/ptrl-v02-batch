@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { api } from '@/api/client'
 import { RegistryModelRow } from '@/types/api'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
 
 export default function Registry() {
-    const [tickerFilter, setTickerFilter] = useState('');
-    const [liftMin, setLiftMin] = useState('');
-    const [precisionMin, setPrecisionMin] = useState('');
-    const [models, setModels] = useState<RegistryModelRow[]>([]);
-    const [filteredModels, setFilteredModels] = useState<RegistryModelRow[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [tickerFilter, setTickerFilter] = useState('')
+    const [liftMin, setLiftMin] = useState('')
+    const [precisionMin, setPrecisionMin] = useState('')
+    const [models, setModels] = useState<RegistryModelRow[]>([])
+    const [filteredModels, setFilteredModels] = useState<RegistryModelRow[]>([])
+    const [loading, setLoading] = useState(false)
     const [offset, setOffset] = useState(0)
+    const [notice, setNotice] = useState<string | null>(null)
     const LIMIT = 50
 
     async function fetchModels(reset = false) {
@@ -21,12 +22,11 @@ export default function Registry() {
             const data = await api.registry.getModels({
                 ticker: tickerFilter || undefined,
                 limit: LIMIT,
-                offset: currentOffset
+                offset: currentOffset,
             })
-            setModels(data);
-            // Initial filter
-            setFilteredModels(data);
-            if (reset) setOffset(0);
+            setModels(data)
+            setFilteredModels(data)
+            if (reset) setOffset(0)
         } catch (e) {
             console.error('Failed to fetch registry models', e)
         } finally {
@@ -34,19 +34,32 @@ export default function Registry() {
         }
     }
 
-    useEffect(() => {
-        fetchModels(true)
-    }, []) // Initial load
+    const runBacktest = async (ticker: string) => {
+        try {
+            const job = await api.jobs.createBacktest({
+                config_path: 'configs/backtest/base.yaml',
+                tickers: [ticker],
+                dry_run: true,
+            })
+            setNotice(`Backtest job created: ${job.job_id}`)
+        } catch (e: any) {
+            setNotice(`Create job failed: ${e.message}`)
+        }
+    }
 
     useEffect(() => {
-        const filtered = models.filter(model => {
-            if (tickerFilter && !model.ticker.includes(tickerFilter.toUpperCase())) return false;
-            if (liftMin && model.lift < parseFloat(liftMin)) return false;
-            if (precisionMin && model.precision < parseFloat(precisionMin)) return false;
-            return true;
-        });
-        setFilteredModels(filtered);
-    }, [tickerFilter, liftMin, precisionMin, models]);
+        fetchModels(true)
+    }, [])
+
+    useEffect(() => {
+        const filtered = models.filter((model) => {
+            if (tickerFilter && !model.ticker.includes(tickerFilter.toUpperCase())) return false
+            if (liftMin && model.lift < parseFloat(liftMin)) return false
+            if (precisionMin && model.precision < parseFloat(precisionMin)) return false
+            return true
+        })
+        setFilteredModels(filtered)
+    }, [tickerFilter, liftMin, precisionMin, models])
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
@@ -55,27 +68,21 @@ export default function Registry() {
     }
 
     const handleNext = () => {
-        setOffset(prev => prev + LIMIT)
-        // In a real app we'd fetch here or use useEffect dependency on offset
-        // For now, let's just re-fetch manually to keep it simple
+        setOffset((prev) => prev + LIMIT)
         setTimeout(() => {
-            api.registry.getModels({
-                ticker: tickerFilter || undefined,
-                limit: LIMIT,
-                offset: offset + LIMIT
-            }).then(setModels)
+            api.registry
+                .getModels({ ticker: tickerFilter || undefined, limit: LIMIT, offset: offset + LIMIT })
+                .then(setModels)
         }, 0)
     }
 
     const handlePrev = () => {
         if (offset < LIMIT) return
-        setOffset(prev => prev - LIMIT)
+        setOffset((prev) => prev - LIMIT)
         setTimeout(() => {
-            api.registry.getModels({
-                ticker: tickerFilter || undefined,
-                limit: LIMIT,
-                offset: offset - LIMIT
-            }).then(setModels)
+            api.registry
+                .getModels({ ticker: tickerFilter || undefined, limit: LIMIT, offset: offset - LIMIT })
+                .then(setModels)
         }, 0)
     }
 
@@ -83,7 +90,8 @@ export default function Registry() {
         <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Model Registry</h1>
 
-            {/* Search Bar */}
+            {notice && <div className="mb-4 rounded-md bg-indigo-50 text-indigo-800 px-3 py-2 text-sm">{notice}</div>}
+
             <div className="mb-6 flex gap-4">
                 <div className="relative flex-1 max-w-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -122,7 +130,6 @@ export default function Registry() {
                 </button>
             </div>
 
-            {/* Table */}
             <div className="bg-white shadow overflow-hidden rounded-lg">
                 {loading ? (
                     <div className="p-8 text-center text-gray-500">Loading models...</div>
@@ -133,15 +140,15 @@ export default function Registry() {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Run ID</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label (H/TH)</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precision</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lift</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Rate</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos Rate</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TP / FP</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticker</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Run ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Label (H/TH)</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precision</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lift</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buy Rate</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pos Rate</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TP / FP</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -154,19 +161,25 @@ export default function Registry() {
                                             </Link>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {row.label_horizon_days}d / {row.label_threshold ? (row.label_threshold * 100).toFixed(0) + "%" : "-"}
+                                            {row.label_horizon_days}d / {row.label_threshold ? (row.label_threshold * 100).toFixed(0) + '%' : '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(row.precision * 100).toFixed(1)}%</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.lift.toFixed(2)}x</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{(row.buy_rate * 100).toFixed(1)}%</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {row.positive_rate ? (row.positive_rate * 100).toFixed(1) + "%" : "-"}
+                                            {row.positive_rate ? (row.positive_rate * 100).toFixed(1) + '%' : '-'}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.tp ?? "-"} / {row.fp ?? "-"}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {row.tp ?? '-'} / {row.fp ?? '-'}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 hover:text-indigo-900">
                                             <div className="flex space-x-3">
-                                                <Link to={`/runs/${row.run_id}`} className="hover:underline">Details</Link>
-                                                <Link to={`/backtests?ticker=${row.ticker}`} className="hover:underline">Backtests</Link>
+                                                <Link to={`/runs/${row.run_id}`} className="hover:underline">
+                                                    Details
+                                                </Link>
+                                                <button className="hover:underline" onClick={() => runBacktest(row.ticker)}>
+                                                    Run Backtest
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -176,12 +189,12 @@ export default function Registry() {
                     </div>
                 )}
 
-                {/* Pagination */}
                 <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                     <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                         <div>
                             <p className="text-sm text-gray-700">
-                                Showing <span className="font-medium">{offset + 1}</span> to <span className="font-medium">{offset + models.length}</span> results
+                                Showing <span className="font-medium">{offset + 1}</span> to{' '}
+                                <span className="font-medium">{offset + models.length}</span> results
                             </p>
                         </div>
                         <div>

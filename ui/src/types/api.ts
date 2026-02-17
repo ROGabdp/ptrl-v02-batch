@@ -105,3 +105,44 @@ export interface RunDetail {
     checkpoints_count: number
     checkpoints_sample: string[]
 }
+
+export type JobType = 'train' | 'backtest' | 'eval_metrics'
+export type JobStatus = 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED'
+
+export interface JobRecord {
+    job_id: string
+    job_type: JobType
+    status: JobStatus
+    created_at: string
+    started_at: string | null
+    ended_at: string | null
+    command: string[]
+    cwd: string
+    artifacts_hint?: {
+        run_id?: string
+        bt_run_id?: string
+    } | null
+    log_path: string
+    meta_path: string
+}
+
+export interface TrainJobRequest {
+    config_path: string
+    overrides?: string[]
+    dry_run?: boolean
+}
+
+export interface BacktestJobRequest {
+    config_path: string
+    tickers?: string[]
+    start?: string
+    end?: string
+    overrides?: string[]
+    dry_run?: boolean
+}
+
+export interface EvalMetricsJobRequest {
+    run_id: string
+    mode?: 'base' | 'finetune'
+    dry_run?: boolean
+}
