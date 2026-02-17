@@ -13,6 +13,7 @@ from api.schemas.jobs import Job, JobType
 from api.services.paths import BASE_DIR
 
 JOBS_DIR = BASE_DIR / "reports" / "jobs"
+RUNTIME_DIR = JOBS_DIR / "runtime"
 _LOCK = threading.Lock()
 
 _RUN_ID_RE = re.compile(r"(?<!bt_)run_id\s*[:=]\s*([A-Za-z0-9_]+)")
@@ -22,6 +23,7 @@ _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 def _ensure_jobs_dir() -> None:
     JOBS_DIR.mkdir(parents=True, exist_ok=True)
+    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _now_iso() -> str:
@@ -63,11 +65,11 @@ def _new_job_id() -> str:
 
 
 def _meta_path(job_id: str) -> Path:
-    return JOBS_DIR / f"{job_id}.json"
+    return RUNTIME_DIR / f"{job_id}.json"
 
 
 def _log_path(job_id: str) -> Path:
-    return JOBS_DIR / f"{job_id}.log"
+    return RUNTIME_DIR / f"{job_id}.log"
 
 
 def _write_meta(meta: Dict) -> None:
@@ -283,7 +285,7 @@ def get_job(job_id: str) -> Job:
 def get_recent_jobs(limit: int = 50) -> List[Job]:
     _ensure_jobs_dir()
     items = []
-    for path in JOBS_DIR.glob("job_*.json"):
+    for path in RUNTIME_DIR.glob("job_*.json"):
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
             items.append(data)
@@ -299,4 +301,3 @@ def get_job_log(job_id: str) -> str:
     if not path.exists():
         raise FileNotFoundError(job_id)
     return path.read_text(encoding="utf-8", errors="replace")
-
