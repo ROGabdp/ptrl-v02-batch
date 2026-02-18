@@ -24,6 +24,9 @@
 1.  **Configuration**:
     -   `configs/daily_watchlist.yaml`: 獨立管理監控清單 (Tickers) 與策略參數 (Strategies)。
     -   支援 `per_ticker` 覆寫策略，確保不同標的可使用不同停損/停利設定。
+    -   **Dual-Stage Trailing Stop**: 支援兩階段移動停利。
+        -   第一階段 (Low Profit): 獲利 > `take_profit_activation_pct` 時啟動，使用 `trail_stop_low_pct`。
+        -   第二階段 (High Profit): 獲利 > `high_profit_threshold_pct` 時切換，使用 `trail_stop_high_pct`。
 
 2.  **Date Resolution (Auto-Date)**:
     -   API 接收 `date_override` 參數。
