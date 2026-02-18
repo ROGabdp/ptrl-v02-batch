@@ -22,22 +22,21 @@ export default function DailyPage() {
     const [itemDetails, setItemDetails] = useState<Record<string, { job?: JobDetail, summary?: string }>>({})
 
     useEffect(() => {
+        const loadConfig = async () => {
+            try {
+                setLoadingConfig(true)
+                const res = await api.daily.getConfig()
+                setConfig(res.config)
+                if (res.saved_at) setLastSaved(res.saved_at)
+            } catch (err: any) {
+                console.error(err)
+                alert('Failed to load daily config')
+            } finally {
+                setLoadingConfig(false)
+            }
+        }
         loadConfig()
     }, [])
-
-    const loadConfig = async () => {
-        try {
-            setLoadingConfig(true)
-            const res = await api.daily.getConfig()
-            setConfig(res.config)
-            if (res.saved_at) setLastSaved(res.saved_at)
-        } catch (err) {
-            console.error(err)
-            alert('Failed to load daily config')
-        } finally {
-            setLoadingConfig(false)
-        }
-    }
 
     const handleSave = async () => {
         if (!config) return
@@ -46,7 +45,7 @@ export default function DailyPage() {
             const res = await api.daily.saveConfig(config)
             setConfig(res.config)
             setLastSaved(res.saved_at || new Date().toISOString())
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
             alert('Failed to save config')
         } finally {
@@ -68,7 +67,7 @@ export default function DailyPage() {
             setBatchItems(res.items)
             // Reset details for new run
             setItemDetails({})
-        } catch (err) {
+        } catch (err: any) {
             console.error(err)
             alert('Failed to run batch')
         } finally {
@@ -89,6 +88,7 @@ export default function DailyPage() {
 
         const interval = setInterval(async () => {
             const updates: Record<string, { job?: JobDetail, summary?: string }> = { ...itemDetails }
+            let hasChanges = false
 
             await Promise.all(batchItems.map(async (item) => {
                 const current = updates[item.ticker]?.job
@@ -103,17 +103,20 @@ export default function DailyPage() {
                         try {
                             const bt = await api.backtests.getDetail(job.artifacts.bt_run_id)
                             summary = bt.end_date_summary_text || bt.summary_text
-                        } catch (e) {
+                        } catch (e: any) {
                             console.error('Failed to fetch summary', e)
                         }
                     }
                     updates[item.ticker] = { job, summary }
-                } catch (e) {
+                    hasChanges = true
+                } catch (e: any) {
                     console.error('Poll error', e)
                 }
             }))
 
-            setItemDetails(updates)
+            if (hasChanges) {
+                setItemDetails(updates)
+            }
         }, 3000)
 
         return () => clearInterval(interval)
