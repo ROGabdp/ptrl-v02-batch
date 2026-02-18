@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../api/client'
-import { DailyConfig, DailyJobItem, EntryThreshold, JobDetail } from '../types/api'
+import { DailyConfig, DailyJobItem, JobDetail } from '../types/api'
 
 // Simple helper to format date
 const formatDate = (date: Date) => date.toISOString().split('T')[0]
