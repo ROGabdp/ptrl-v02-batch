@@ -247,6 +247,18 @@ export default function DailyPage() {
                                     }}
                                 />
                             </label>
+                            <label className="block">
+                                <span className="text-sm">High Profit Threshold %</span>
+                                <input
+                                    type="number" step="0.01"
+                                    className="mt-1 block w-full border rounded p-2"
+                                    value={config.strategy.exit?.high_profit_threshold_pct ?? 0}
+                                    onChange={e => {
+                                        const val = Number(e.target.value)
+                                        setConfig({ ...config, strategy: { ...config.strategy, exit: { ...config.strategy.exit!, high_profit_threshold_pct: val } } })
+                                    }}
+                                />
+                            </label>
                         </div>
                     </div>
                 </div>
